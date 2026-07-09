@@ -1,0 +1,30 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+*.env
+github.env
+*.key
+*_token.*
+*_secret.*
+
+# AIPOCH process/session artefacts -- never published (Tenet 20 / REPO-002)
+AIPOCH_Learning_Log*.md
+task_plan.md
+findings.md
+progress.md
+FLOW.md
+QUESTION.md
+Phase*_*.md
+STAGE*_*.md
+
+# Entire manuscript/ folder stays local-only, never pushed (Tenet 20 hard rule -- exists
+# locally for the author's own submission workflow, git-excluded per ghana-repo-standards Phase 0)
+manuscript/
+
+_archive/
+docs/
+evidence/
+task_plan.md
+progress.md
+findings.md

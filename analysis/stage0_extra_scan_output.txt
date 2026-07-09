@@ -1,0 +1,84 @@
+=== TB indicators (all) ===
+  - Cases started on MDR-TB treatment
+  - Confirmed cases of RR-/MDR-TB
+  - Estimated number of MDR/RR-TB incident cases
+  - HIV-positive TB patients on ART (antiretroviral therapy) (%)
+  - Incidence of tuberculosis (per 100 000 population per year)
+  - Incidence of tuberculosis (per 100 000 population) (HIV-positive cases)
+  - New cases tested for RR-/MDR-TB (%)
+  - Number of incident tuberculosis cases
+  - Number of incident tuberculosis cases in children aged 0 - 14
+  - Number of incident tuberculosis cases,  (HIV-positive cases)
+  - Previously treated cases tested for RR-/MDR-TB (%)
+  - TB patients with known HIV status (%)
+  - Tested TB patients HIV-positive (%)
+  - Treatment success rate for patients treated for MDR-TB (%)
+  - Treatment success rate: HIV-positive TB cases
+  - Treatment success rate: XDR-TB cases
+  - Treatment success rate: new TB cases
+  - Treatment success rate: previously treated TB cases
+  - Tuberculosis - new and relapse cases
+  - Tuberculosis treatment coverage
+
+=== GHE indicators (all 31) ===
+  - Adolescent mortality rate (per 1 000 age specific cohort)
+  - Adult mortality rate (probability of dying between 15 and 60 years per 1000 population)
+  - Age-standardized suicide rates (per 100 000 population)
+  - Crude suicide rates (per 100 000 population)
+  - Deaths per 1 000 live births
+  - Distribution of causes of death among children aged < 5 years (%)
+  - Distribution of road traffic deaths by type of road user (%)
+  - Estimated number of road traffic deaths
+  - Estimated road traffic death rate (per 100 000 population)
+  - Healthy life expectancy (HALE) at age 60 (years)
+  - Healthy life expectancy (HALE) at birth (years)
+  - Infant mortality rate (probability of dying between birth and age 1 per 1000 live births)
+  - Life expectancy at age 60 (years)
+  - Life expectancy at birth (years)
+  - Mortality rate among children ages 5 to 9 years (per 1000 children aged 5)
+  - Mortality rate attributed to unintentional poisoning (per 100 000 population)
+  - Mortality rate for 5-14 year-olds (probability of dying per 1000 children aged 5-14 years)
+  - Neonatal mortality rate (per 1000 live births)
+  - Number of deaths among adolescents (10 to 19 years of age)
+  - Number of deaths among children 5 to 14 years of age
+  - Number of deaths among children ages 5 to 9 years
+  - Number of deaths in children aged <5 years, by cause
+  - Number of infant deaths
+  - Number of maternal deaths
+  - Number of neonatal deaths
+  - Number of under-five deaths
+  - Premature deaths due to noncommunicable diseases (NCD) as a proportion of all NCD deaths
+  - Probability (%) of dying between age 30 and exact age 70 from any of cardiovascular disease, cancer, diabetes, or chronic respiratory disease
+  - Stillbirth rate (per 1000 total births)
+  - Total NCD Deaths
+  - Under-five mortality rate (probability of dying by age 5 per 1000 live births)
+
+=== NCD indicators containing '30' or 'probability' ===
+  - Prevalence of cervical cancer screening  among women aged 30-49 years (%)
+  - Prevalence of obesity among adults, BMI &GreaterEqual; 30 (age-standardized estimate) (%)
+  - Prevalence of obesity among adults, BMI &GreaterEqual; 30 (crude estimate) (%)
+  - Probability (%) of dying between age 30 and exact age 70 from any of cardiovascular disease, cancer, diabetes, or chronic respiratory disease
+
+=== indicators_gha.csv: life expectancy at birth / DALY / suicide / UHC exact ===
+
+'Life expectancy at birth': 3
+   - Life expectancy at birth, female (years)
+   - Life expectancy at birth, total (years)
+   - Life expectancy at birth, male (years)
+
+'DALY': 0
+
+'suicide': 3
+   - Suicide mortality rate, female (per 100,000 female population)
+   - Suicide mortality rate, male (per 100,000 male population)
+   - Suicide mortality rate (per 100,000 population)
+
+'UHC': 0
+
+'universal health': 0
+
+=== indicators_gha.csv source/provider check ===
+['Country Name', 'Country ISO3', 'Year', 'Indicator Name', 'Indicator Code', 'Value']
+<ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str

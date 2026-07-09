@@ -1,0 +1,170 @@
+
+=== ghe (global_health_estimates_life_expectancy_and_leading_causes_of_death_and_disability_indicators_gh.csv) ===
+raw shape (incl possible HXL row): (5715, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 31
+year range: 1932 - 2023
+dimension types: <ArrowStringArray>
+['SEX', 'AGEGROUP', 'ROADUSERTYPE']
+Length: 3, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+=== whs (world_health_statistics_indicators_gha.csv) ===
+raw shape (incl possible HXL row): (16340, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 160
+year range: 1932 - 2030
+dimension types: <ArrowStringArray>
+[       'NCDCCS_SECTION',                   'SEX',              'AGEGROUP',        'WEALTHQUINTILE',     'RESIDENCEAREATYPE',          'WEALTHDECILE',       'HOUSEHOLDWEALTH',
+        'EDUCATIONLEVEL',              'SEVERITY', 'HOUSEHOLD_COMP_BY_AGE',         'WEALTHTERCILE',       'CALCULATIONTYPE']
+Length: 12, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+=== health_financing (health_financing_indicators_gha.csv) ===
+raw shape (incl possible HXL row): (277, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 12
+year range: 2000 - 2022
+dimension types: <ArrowStringArray>
+[]
+Length: 0, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+=== health_systems (health_systems_indicators_gha.csv) ===
+raw shape (incl possible HXL row): (52, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 8
+year range: 2010 - 2015
+dimension types: <ArrowStringArray>
+['CAREPATIENT', 'WEALTHQUINTILE']
+Length: 2, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+=== tb (tuberculosis_indicators_gha.csv) ===
+raw shape (incl possible HXL row): (383, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 20
+year range: 1995 - 2024
+dimension types: <ArrowStringArray>
+[]
+Length: 0, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+=== hiv (hiv_indicators_gha.csv) ===
+raw shape (incl possible HXL row): (406, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 16
+year range: 1990 - 2024
+dimension types: <ArrowStringArray>
+['SEX']
+Length: 1, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+=== malaria (malaria_indicators_gha.csv) ===
+raw shape (incl possible HXL row): (130, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 11
+year range: 2000 - 2023
+dimension types: <ArrowStringArray>
+[]
+Length: 0, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+=== ncd (noncommunicable_diseases_indicators_gha.csv) ===
+raw shape (incl possible HXL row): (4222, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 39
+year range: 1961 - 2030
+dimension types: <ArrowStringArray>
+['NCDCCS_SECTION', 'SEX', 'ALCOHOLTYPE', 'CALCULATIONTYPE']
+Length: 4, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+=== child_mortality (child_mortality_indicators_gha.csv) ===
+raw shape (incl possible HXL row): (4910, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 16
+year range: 1932 - 2023
+dimension types: <ArrowStringArray>
+['SEX', 'AGEGROUP']
+Length: 2, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+=== global_strategy (global_strategy_indicators_gha.csv) ===
+raw shape (incl possible HXL row): (2428, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 12
+year range: 1988 - 2024
+dimension types: <ArrowStringArray>
+['SEX', 'WEALTHDECILE', 'HOUSEHOLDWEALTH', 'RESIDENCEAREATYPE', 'WEALTHQUINTILE', 'AGEGROUP', 'HOUSEHOLD_COMP_BY_AGE', 'WEALTHTERCILE', 'EDUCATIONLEVEL']
+Length: 9, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+=== indicators (indicators_gha.csv) ===
+raw shape (incl possible HXL row): (84834, 6)
+columns: ['Country Name', 'Country ISO3', 'Year', 'Indicator Name', 'Indicator Code', 'Value']
+row0 is HXL hashtag row: True
+
+=== health_indicators (health_indicators_gha.csv) ===
+raw shape (incl possible HXL row): (25336, 17)
+columns: ['GHO (CODE)', 'GHO (DISPLAY)', 'GHO (URL)', 'YEAR (DISPLAY)', 'STARTYEAR', 'ENDYEAR', 'REGION (CODE)', 'REGION (DISPLAY)', 'COUNTRY (CODE)', 'COUNTRY (DISPLAY)', 'DIMENSION (TYPE)', 'DIMENSION (CODE)', 'DIMENSION (NAME)', 'Numeric', 'Value', 'Low', 'High']
+row0 is HXL hashtag row: True
+n unique indicators: 635
+year range: 1932 - 2030
+dimension types: <ArrowStringArray>
+[        'NCDCCS_SECTION',                    'SEX',               'AGEGROUP',           'BEVERAGETYPE',         'WEALTHQUINTILE',      'RESIDENCEAREATYPE', 'RSUDSPECIFICPOPULATION',
+         'EDUCATIONLEVEL',           'WEALTHDECILE',            'ALCOHOLTYPE',        'HOUSEHOLDWEALTH',     'NATIONALSYSTEMTYPE',                'RSUDHWF',          'RSUDTREATMENT',
+               'SEVERITY']
+Length: 15, dtype: str
+countries present: <ArrowStringArray>
+['Ghana']
+Length: 1, dtype: str
+
+
+########## NON-STANDARD-SCHEMA FILES ##########
+
+=== fertility_subnational ===
+shape: (1138, 30)
+columns: ['ISO3', 'Location', 'DataId', 'Indicator', 'Value', 'Precision', 'DHS_CountryCode', 'CountryName', 'SurveyYear', 'SurveyId', 'IndicatorId', 'IndicatorOrder', 'IndicatorType', 'CharacteristicId', 'CharacteristicOrder', 'CharacteristicCategory', 'CharacteristicLabel', 'ByVariableId', 'ByVariableLabel', 'IsTotal', 'IsPreferred', 'SDRID', 'RegionId', 'SurveyYearLabel', 'SurveyType', 'DenominatorWeighted', 'DenominatorUnweighted', 'CILow', 'CIHigh', 'LevelRank']
+            ISO3            Location    DataId                           Indicator                 Value             Precision DHS_CountryCode    CountryName  SurveyYear    SurveyId      IndicatorId  IndicatorOrder IndicatorType  CharacteristicId  CharacteristicOrder CharacteristicCategory CharacteristicLabel           ByVariableId   ByVariableLabel  IsTotal  IsPreferred       SDRID         RegionId  SurveyYearLabel SurveyType  DenominatorWeighted  DenominatorUnweighted  CILow  CIHigh  LevelRank
+0  #country+code           #loc+name  #meta+id                     #indicator+name  #indicator+value+num  #indicator+precision             NaN  #country+name  #date+year  #survey+id  #indicator+code             NaN           NaN               NaN                  NaN                    NaN                 NaN  #indicator+label+code  #indicator+label      NaN          NaN         NaN              NaN              NaN        NaN                  NaN                    NaN    NaN     NaN        NaN
+1            GHA  Western (pre 2022)    889413  Age specific fertility rate: 15-19                   134                     0              GH          Ghana        1988   GH1988DHS    FE_FRTR_W_A15      11763010.0             I          408001.0            1408010.0                 Region  Western (pre 2022)                      0               NaN      0.0          1.0  FEFRTRWA15  GHDHS1988408001           1988.0        DHS                  NaN                    NaN    NaN     NaN        1.0
+2            GHA             Central    895719  Age specific fertility rate: 15-19                   171                     0              GH          Ghana        1988   GH1988DHS    FE_FRTR_W_A15      11763010.0             I          408002.0            1408020.0                 Region             Central                      0               NaN      0.0          1.0  FEFRTRWA15  GHDHS1988408002           1988.0        DHS                  NaN                    NaN    NaN     NaN        1.0
+
+=== Master Sheet ===
+shape: (261, 18)
+columns: ['Region', "Metropolitan, Municipal, and District Assemblies (MMDA's)", 'Class', 'Latitude', 'Longitude', 'Employed Population', 'Unemployed Population', 'Incidence of Poverty', 'Intensity of Poverty', 'Illiterate Population', 'Uninsured Population', 'Male Population 0-14', 'Female Population 0-14', 'Male Population 15-64', 'Female Population 15-64', 'Male Population 65+', 'Female Population 65+', 'Total Population']
+
+=== GeoJSON ===
+n features: 260
+sample properties keys: ['FID', 'OBJECTID', 'REGION', 'DISTRICT', 'FID_', 'Shape_Leng', 'Shape_Area', 'Shape__Area', 'Shape__Length']

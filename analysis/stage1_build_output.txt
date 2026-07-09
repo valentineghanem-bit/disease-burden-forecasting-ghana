@@ -1,0 +1,25 @@
+National panel shape: (93, 25)
+      life_expectancy_birth_yrs_who  ...  pm25_exposure_wb
+year                                 ...                  
+2017                      65.085944  ...         60.359034
+2018                      65.515544  ...         56.004183
+2019                      65.971334  ...         49.656632
+2020                      66.181367  ...         54.242787
+2021                      66.101785  ...               NaN
+2022                            NaN  ...               NaN
+2023                            NaN  ...               NaN
+2024                            NaN  ...               NaN
+
+[8 rows x 25 columns]
+
+District rows: 261 | geojson area matched via crosswalk: 258/261
+  unmatched districts (expected -- 260-vs-261 gap-district-to-parent-polygon merge, per the standing [[ghana-261-districts]] rule): ['Awutu Senya West', 'Sagnarigu Municipal', 'Guan']
+District covariates shape: (261, 25)
+                  district  poverty_incidence  literacy_rate  uninsured_rate  elderly_share_65plus  total_pop
+0  Asunafo North Municipal               26.1       0.736781        0.142366              0.037188     151258
+1            Asunafo South               26.2       0.711068        0.474954              0.039251      91693
+2            Asutifi North               26.6       0.744494        0.172970              0.038460      73556
+3            Asutifi South               23.2       0.707414        0.216726              0.037500      67334
+4     Tano North Municipal               21.6       0.765500        0.141041              0.048030      93838
+
+Region fertility panel shape: (9, 21)

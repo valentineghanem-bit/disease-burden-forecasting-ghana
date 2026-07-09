@@ -1,0 +1,5 @@
+ncd: total rows=99, years with != 3 rows: {'2021': np.int64(36)}
+global_strategy: total rows=99, years with != 3 rows: {'2021': np.int64(36)}
+ghe: total rows=99, years with != 3 rows: {'2021': np.int64(36)}
+whs: total rows=99, years with != 3 rows: {'2021': np.int64(36)}
+health_indicators: total rows=99, years with != 3 rows: {'2021': np.int64(36)}

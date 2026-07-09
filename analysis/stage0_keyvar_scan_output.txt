@@ -1,0 +1,324 @@
+
+### 'life expectancy' ###
+  [ghe] n_indicator_variants=4
+      - Life expectancy at birth (years)
+      - Healthy life expectancy (HALE) at birth (years)
+      - Healthy life expectancy (HALE) at age 60 (years)
+      - Life expectancy at age 60 (years)
+  [whs] n_indicator_variants=4
+      - Life expectancy at birth (years)
+      - Healthy life expectancy (HALE) at birth (years)
+      - Healthy life expectancy (HALE) at age 60 (years)
+      - Life expectancy at age 60 (years)
+  [health_indicators] n_indicator_variants=4
+      - Life expectancy at birth (years)
+      - Healthy life expectancy (HALE) at birth (years)
+      - Healthy life expectancy (HALE) at age 60 (years)
+      - Life expectancy at age 60 (years)
+
+### 'DALY' ###
+  [health_indicators] n_indicator_variants=12
+      - Ambient air pollution attributable DALYs
+      - Ambient air pollution attributable DALYs  (per 100 000 population, age-standardized)
+      - Household air pollution attributable DALYs (per 100 000, age-standardized)
+      - Household and ambient air pollution attributable DALYs (per 100 000 capita, age-standardized)
+      - Household air pollution attributable DALYs
+      - Household and ambient air pollution attributable DALYs
+
+### 'leading cause' ###
+  NOT FOUND in any of the 11 GHO-schema files
+
+### 'Tuberculosis incidence' ###
+  NOT FOUND in any of the 11 GHO-schema files
+
+### 'TB treatment' ###
+  [tb] n_indicator_variants=1
+      - Cases started on MDR-TB treatment
+  [health_indicators] n_indicator_variants=1
+      - Cases started on MDR-TB treatment
+
+### 'HIV' ###
+  [whs] n_indicator_variants=5
+      - Estimated number of people (all ages) living with HIV
+      - Number of people dying from HIV-related causes
+      - New HIV infections (per 1000 uninfected population)
+      - Number of new HIV infections
+      - Prevalence of HIV among adults aged 15 to 49 (%)
+  [tb] n_indicator_variants=6
+      - Tested TB patients HIV-positive (%)
+      - TB patients with known HIV status (%)
+      - Number of incident tuberculosis cases,  (HIV-positive cases)
+      - HIV-positive TB patients on ART (antiretroviral therapy) (%)
+      - Treatment success rate: HIV-positive TB cases
+      - Incidence of tuberculosis (per 100 000 population) (HIV-positive cases)
+  [hiv] n_indicator_variants=9
+      - Estimated number of pregnant women living with HIV
+      - Estimated number of people (all ages) living with HIV
+      - Number of people dying from HIV-related causes
+      - Percentage of HIV-positive results returned to people in the calendar year
+      - New HIV infections (per 1000 uninfected population)
+      - Number of new HIV infections
+  [global_strategy] n_indicator_variants=2
+      - New HIV infections (per 1000 uninfected population)
+      - Estimated antiretroviral therapy coverage among people living with HIV (%)
+  [health_indicators] n_indicator_variants=15
+      - Estimated number of pregnant women living with HIV
+      - Estimated number of people (all ages) living with HIV
+      - Number of people dying from HIV-related causes
+      - Tested TB patients HIV-positive (%)
+      - Percentage of HIV-positive results returned to people in the calendar year
+      - New HIV infections (per 1000 uninfected population)
+
+### 'Malaria' ###
+  [whs] n_indicator_variants=1
+      - Estimated malaria incidence (per 1000 population at risk)
+  [malaria] n_indicator_variants=11
+      - Total number of  malaria cases (presumed + confirmed cases)
+      - Number of presumed malaria cases
+      - Estimated malaria incidence (per 1000 population at risk)
+      - Number of indigenous P. falciparum malaria cases
+      - Number of suspected malaria cases
+      - Estimated malaria mortality rate (per 100 000 population)
+  [health_indicators] n_indicator_variants=11
+      - Total number of  malaria cases (presumed + confirmed cases)
+      - Number of presumed malaria cases
+      - Estimated malaria incidence (per 1000 population at risk)
+      - Number of indigenous P. falciparum malaria cases
+      - Number of suspected malaria cases
+      - Estimated malaria mortality rate (per 100 000 population)
+
+### 'premature' ###
+  [ghe] n_indicator_variants=1
+      - Premature deaths due to noncommunicable diseases (NCD) as a proportion of all NCD deaths
+  [whs] n_indicator_variants=1
+      - Premature deaths due to noncommunicable diseases (NCD) as a proportion of all NCD deaths
+  [ncd] n_indicator_variants=1
+      - Premature deaths due to noncommunicable diseases (NCD) as a proportion of all NCD deaths
+  [health_indicators] n_indicator_variants=1
+      - Premature deaths due to noncommunicable diseases (NCD) as a proportion of all NCD deaths
+
+### '30-70' ###
+  NOT FOUND in any of the 11 GHO-schema files
+
+### 'suicide' ###
+  [ghe] n_indicator_variants=2
+      - Crude suicide rates (per 100 000 population)
+      - Age-standardized suicide rates (per 100 000 population)
+  [whs] n_indicator_variants=1
+      - Crude suicide rates (per 100 000 population)
+  [ncd] n_indicator_variants=1
+      - Crude suicide rates (per 100 000 population)
+  [global_strategy] n_indicator_variants=1
+      - Crude suicide rates (per 100 000 population)
+  [health_indicators] n_indicator_variants=2
+      - Crude suicide rates (per 100 000 population)
+      - Age-standardized suicide rates (per 100 000 population)
+
+### 'fertility rate' ###
+  NOT FOUND in any of the 11 GHO-schema files
+
+### 'Total fertility' ###
+  NOT FOUND in any of the 11 GHO-schema files
+
+### 'under-five' ###
+  [ghe] n_indicator_variants=2
+      - Number of under-five deaths
+      - Under-five mortality rate (probability of dying by age 5 per 1000 live births)
+  [whs] n_indicator_variants=2
+      - Number of under-five deaths
+      - Under-five mortality rate (probability of dying by age 5 per 1000 live births)
+  [child_mortality] n_indicator_variants=2
+      - Number of under-five deaths
+      - Under-five mortality rate (probability of dying by age 5 per 1000 live births)
+  [health_indicators] n_indicator_variants=2
+      - Number of under-five deaths
+      - Under-five mortality rate (probability of dying by age 5 per 1000 live births)
+
+### 'U5MR' ###
+  NOT FOUND in any of the 11 GHO-schema files
+
+### 'neonatal' ###
+  [ghe] n_indicator_variants=2
+      - Neonatal mortality rate (per 1000 live births)
+      - Number of neonatal deaths
+  [whs] n_indicator_variants=4
+      - Neonates protected at birth against neonatal tetanus (PAB) (%)
+      - Neonatal mortality rate (per 1000 live births)
+      - Number of neonatal deaths
+      - Neonatal tetanus - number of reported cases
+  [child_mortality] n_indicator_variants=2
+      - Neonatal mortality rate (per 1000 live births)
+      - Number of neonatal deaths
+  [health_indicators] n_indicator_variants=4
+      - Neonates protected at birth against neonatal tetanus (PAB) (%)
+      - Neonatal mortality rate (per 1000 live births)
+      - Number of neonatal deaths
+      - Neonatal tetanus - number of reported cases
+
+### 'infant mortality' ###
+  [ghe] n_indicator_variants=1
+      - Infant mortality rate (probability of dying between birth and age 1 per 1000 live births)
+  [whs] n_indicator_variants=1
+      - Infant mortality rate (probability of dying between birth and age 1 per 1000 live births)
+  [child_mortality] n_indicator_variants=1
+      - Infant mortality rate (probability of dying between birth and age 1 per 1000 live births)
+  [health_indicators] n_indicator_variants=1
+      - Infant mortality rate (probability of dying between birth and age 1 per 1000 live births)
+
+### 'current health expenditure' ###
+  [whs] n_indicator_variants=6
+      - External health expenditure (EXT) as percentage of current health expenditure (CHE) (%)
+      - Domestic general government health expenditure (GGHE-D) as percentage of current health expenditure (CHE) (%)
+      - Current health expenditure (CHE) per capita in US$
+      - Domestic private health expenditure (PVT-D) as percentage of current health expenditure (CHE) (%)
+      - Current health expenditure (CHE) as percentage of gross domestic product (GDP) (%)
+      - Out-of-pocket expenditure as percentage of current health expenditure (CHE) (%)
+  [health_financing] n_indicator_variants=6
+      - External health expenditure (EXT) as percentage of current health expenditure (CHE) (%)
+      - Domestic general government health expenditure (GGHE-D) as percentage of current health expenditure (CHE) (%)
+      - Current health expenditure (CHE) per capita in US$
+      - Domestic private health expenditure (PVT-D) as percentage of current health expenditure (CHE) (%)
+      - Current health expenditure (CHE) as percentage of gross domestic product (GDP) (%)
+      - Out-of-pocket expenditure as percentage of current health expenditure (CHE) (%)
+  [health_indicators] n_indicator_variants=6
+      - External health expenditure (EXT) as percentage of current health expenditure (CHE) (%)
+      - Domestic general government health expenditure (GGHE-D) as percentage of current health expenditure (CHE) (%)
+      - Current health expenditure (CHE) per capita in US$
+      - Domestic private health expenditure (PVT-D) as percentage of current health expenditure (CHE) (%)
+      - Current health expenditure (CHE) as percentage of gross domestic product (GDP) (%)
+      - Out-of-pocket expenditure as percentage of current health expenditure (CHE) (%)
+
+### 'out-of-pocket' ###
+  [whs] n_indicator_variants=2
+      - Out-of-pocket expenditure (OOP) per capita in US$
+      - Out-of-pocket expenditure as percentage of current health expenditure (CHE) (%)
+  [health_financing] n_indicator_variants=2
+      - Out-of-pocket expenditure (OOP) per capita in US$
+      - Out-of-pocket expenditure as percentage of current health expenditure (CHE) (%)
+  [health_indicators] n_indicator_variants=2
+      - Out-of-pocket expenditure (OOP) per capita in US$
+      - Out-of-pocket expenditure as percentage of current health expenditure (CHE) (%)
+
+### 'UHC' ###
+  [global_strategy] n_indicator_variants=2
+      - UHC Service Coverage Index (SDG 3.8.1)
+      - UHC Service Coverage sub-index on reproductive, maternal, newborn and child health
+  [health_indicators] n_indicator_variants=6
+      - UHC Service Coverage sub-index on infectious diseases
+      - UHC Service Coverage Index (SDG 3.8.1)
+      - UHC Service Coverage sub-index on reproductive, maternal, newborn and child health
+      - UHC Service Coverage sub-index on service capacity and access
+      - UHC Service Coverage sub-index on noncommunicable diseases
+      - Primary data availability for UHC Service Coverage Index (SDG 3.8.1) (%)
+
+### 'universal health coverage' ###
+  NOT FOUND in any of the 11 GHO-schema files
+
+### 'service coverage index' ###
+  [global_strategy] n_indicator_variants=1
+      - UHC Service Coverage Index (SDG 3.8.1)
+  [health_indicators] n_indicator_variants=2
+      - UHC Service Coverage Index (SDG 3.8.1)
+      - Primary data availability for UHC Service Coverage Index (SDG 3.8.1) (%)
+
+### 'air pollution' ###
+  [whs] n_indicator_variants=1
+      - Joint effects of air pollution attributable deaths
+  [global_strategy] n_indicator_variants=1
+      - Ambient and household air pollution attributable death rate (per 100 000 population, age-standardized)
+  [health_indicators] n_indicator_variants=12
+      - Household air pollution attributable deaths
+      - Ambient air pollution attributable DALYs
+      - Ambient air pollution attributable DALYs  (per 100 000 population, age-standardized)
+      - Household air pollution attributable death rate (per 100 000 population, age-standardized)
+      - Household air pollution attributable DALYs (per 100 000, age-standardized)
+      - Household and ambient air pollution attributable DALYs (per 100 000 capita, age-standardized)
+
+### 'PM2.5' ###
+  [whs] n_indicator_variants=1
+      - Concentrations of fine particulate matter (PM2.5)
+  [health_indicators] n_indicator_variants=1
+      - Concentrations of fine particulate matter (PM2.5)
+
+
+########## indicators_gha.csv (World Bank style long format) ##########
+n unique Indicator Name: 3778
+year range: 1960 - 2024
+
+'life expectancy': 16 matches
+   - School life expectancy, primary and secondary, both sexes (years)
+   - School life expectancy, primary and secondary, female (years)
+   - School life expectancy, primary and secondary, gender parity index (GPI)
+   - School life expectancy, primary and secondary, male (years)
+   - School life expectancy, primary to tertiary, gender parity index (GPI)
+   - School life expectancy, tertiary, both sexes (years)
+   - School life expectancy, tertiary, female (years)
+   - School life expectancy, tertiary, gender parity index (GPI)
+
+'fertility': 28 matches
+   - Adolescent fertility rate (births per 1,000 women ages 15-19)
+   - Fertility rate, total (births per woman)
+   - Wanted fertility rate (births per woman)
+   - Fertility planning status (wanted later) (% of births): Q1 (lowest)
+   - Fertility planning status (wanted later) (% of births): Q2
+   - Fertility planning status (wanted later) (% of births): Q3
+   - Fertility planning status (wanted later) (% of births): Q4
+   - Fertility planning status (wanted later) (% of births): Q5 (highest)
+
+'mortality': 36 matches
+   - Mortality rate, under-5 (per 1,000 live births)
+   - Maternal mortality ratio (modeled estimate, per 100,000 live births)
+   - Mortality rate attributed to household and ambient air pollution, age-standardized (per 100,000 population)
+   - Mortality rate attributed to unintentional poisoning (per 100,000 population)
+   - Mortality rate attributed to unintentional poisoning, female (per 100,000 female population)
+   - Mortality rate attributed to unintentional poisoning, male (per 100,000 male population)
+   - Mortality rate attributed to unsafe water, unsafe sanitation and lack of hygiene (per 100,000 population)
+   - Mortality rate, under-5, female (per 1,000 live births)
+
+'health expenditure': 16 matches
+   - Current health expenditure (% of GDP)
+   - Current health expenditure per capita (current US$)
+   - Current health expenditure per capita, PPP (current international $)
+   - External health expenditure (% of current health expenditure)
+   - External health expenditure per capita (current US$)
+   - External health expenditure per capita, PPP (current international $)
+   - Domestic general government health expenditure (% of current health expenditure)
+   - Domestic general government health expenditure (% of GDP)
+
+'PM2.5': 5 matches
+   - PM2.5 air pollution, mean annual exposure (micrograms per cubic meter)
+   - PM2.5 pollution, population exposed to levels exceeding WHO Interim Target-1 value (% of total)
+   - PM2.5 pollution, population exposed to levels exceeding WHO Interim Target-2 value (% of total)
+   - PM2.5 pollution, population exposed to levels exceeding WHO Interim Target-3 value (% of total)
+   - PM2.5 air pollution, population exposed to levels exceeding WHO guideline value (% of total)
+
+'air pollution': 5 matches
+   - PM2.5 air pollution, mean annual exposure (micrograms per cubic meter)
+   - PM2.5 air pollution, population exposed to levels exceeding WHO guideline value (% of total)
+   - Mortality rate attributed to household and ambient air pollution, age-standardized (per 100,000 population)
+   - Mortality rate attributed to household and ambient air pollution, age-standardized, female (per 100,000 female population)
+   - Mortality rate attributed to household and ambient air pollution, age-standardized, male (per 100,000 male population)
+
+'immuniz': 4 matches
+   - Immunization, HepB3 (% of one-year-old children)
+   - Immunization, DPT (% of children ages 12-23 months)
+   - Immunization, measles (% of children ages 12-23 months)
+   - Immunization, measles second dose (% of children by the nationally recommended age)
+
+
+########## fertility-rates_subnational_gha.csv ##########
+unique CharacteristicCategory: <ArrowStringArray>
+['Region']
+Length: 1, dtype: str
+unique CharacteristicLabel (region names) sample: <ArrowStringArray>
+[              'Western (pre 2022)',                          'Central',                    'Greater Accra',                 'Volta (pre 2022)',                          'Eastern',                          'Ashanti',
+                      'Brong-Ahafo', 'Northern, Upper West, Upper East',            '..Northern (pre 2022)',                     '..Upper East',                     '..Upper West',            '..Western (post 2022)',
+                  '..Western North',              '..Volta (post 2022)',                            '..Oti',                          '..Ahafo',                           '..Bono',                      '..Bono East',
+          '....Northern(post 2022)',                     '....Savannah',                    '....Northeast']
+Length: 21, dtype: str
+survey years: [np.int64(1988), np.int64(1993), np.int64(1998), np.int64(2003), np.int64(2008), np.int64(2014), np.int64(2016), np.int64(2019), np.int64(2022)]
+unique Indicator: <ArrowStringArray>
+['Age specific fertility rate: 15-19', 'Age specific fertility rate: 20-24', 'Age specific fertility rate: 25-29', 'Age specific fertility rate: 30-34', 'Age specific fertility rate: 35-39',
+ 'Age specific fertility rate: 40-44', 'Age specific fertility rate: 45-49',         'Total fertility rate 15-49',         'Total fertility rate 15-44',             'General fertility rate',
+        'Total wanted fertility rate',                   'Crude birth rate']
+Length: 12, dtype: str

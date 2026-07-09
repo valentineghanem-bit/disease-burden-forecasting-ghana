@@ -1,0 +1,47 @@
+rows: 261
+
+missing values per component:
+poverty_incidence    0
+poverty_intensity    0
+illiteracy_rate      0
+uninsured_rate       0
+unemployment_rate    0
+dependency_ratio     0
+dtype: int64
+
+Explained variance ratio: [0.5655 0.2581 0.1137]
+PC1+PC2: 0.8236
+
+Loadings (PC1, PC2):
+                     PC1    PC2
+poverty_incidence  0.505  0.193
+poverty_intensity  0.394 -0.371
+illiteracy_rate    0.484  0.214
+uninsured_rate     0.043  0.658
+unemployment_rate  0.378 -0.531
+dependency_ratio   0.459  0.255
+
+PC1 loadings (abs, sorted):
+poverty_incidence    0.505
+illiteracy_rate      0.484
+dependency_ratio     0.459
+poverty_intensity    0.394
+unemployment_rate    0.378
+uninsured_rate       0.043
+Name: PC1, dtype: float64
+
+Items loading weakly on PC1 (<0.3): ['uninsured_rate']
+Items loading strongly on PC1 (>=0.3): ['poverty_incidence', 'illiteracy_rate', 'dependency_ratio', 'poverty_intensity', 'unemployment_rate']
+
+Cronbach's alpha, full 6-item set: 0.801
+Cronbach's alpha, PC1-aligned 5-item subset (excluding ['uninsured_rate']): 0.878
+
+Held-out benchmark (elderly_share_65plus, NOT a PCA input) correlations:
+  composite (PC1) vs benchmark: r=0.142, R2=0.0203
+  poverty_incidence alone vs benchmark: r=0.095, R2=0.0089
+
+Bootstrap 95% CI on R2(composite) - R2(poverty_incidence): (-0.0008, 0.0329)
+  Includes zero: True
+Steiger's Z = 2.076, p = 0.0379 (supporting statistic only)
+
+Saved: data/processed/district_vulnerability_index.csv, outputs/data/vulnerability_pca_loadings.csv

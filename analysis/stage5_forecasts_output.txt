@@ -1,0 +1,23 @@
+Forecast 21 indicators to 2030 (excluded 4 as too sparse for formal forecasting: ['uhc_service_coverage_index', 'pm25_conc_ugm3', 'air_pollution_ambient_daly', 'air_pollution_household_daly'])
+                          indicator  n_obs  last_year     last_value     arima_2030       ets_2030                                          confidence
+0     life_expectancy_birth_yrs_who     22       2021      66.101785      65.301897      65.512808  LOW (short series, n<25 -- interpret with caution)
+1                    hale_birth_yrs     22       2021      57.882518      57.199962      56.866918  LOW (short series, n<25 -- interpret with caution)
+2                          u5mr_who     92       2023      37.064003      27.511704      27.476744                                            standard
+3                 ncd_premature_pct     22       2021      62.696838      63.408056      61.906809  LOW (short series, n<25 -- interpret with caution)
+4          ncd_3070_probability_pct     22       2021      22.200000      19.955351      20.970879  LOW (short series, n<25 -- interpret with caution)
+5                  total_ncd_deaths     22       2021  101835.000000  116262.019443  116002.067941  LOW (short series, n<25 -- interpret with caution)
+6            suicide_rate_crude_who     22       2021       5.316740       5.388341       5.395610  LOW (short series, n<25 -- interpret with caution)
+7           suicide_rate_agestd_who     22       2021       8.079292       8.138292       8.120843  LOW (short series, n<25 -- interpret with caution)
+8              tb_incidence_per100k     25       2024     126.000000     106.245039     106.252590                                            standard
+9              hiv_new_infections_n     25       2024   15000.000000   15000.075561   12993.146140                                            standard
+10       hiv_new_infections_per1000     35       2024       0.470000       0.359935       0.227634                                            standard
+11  malaria_incidence_per1000atrisk     24       2023     193.901671      94.551820     124.992204  LOW (short series, n<25 -- interpret with caution)
+12                      oop_pct_che     23       2022      25.032135      27.396060      22.759934  LOW (short series, n<25 -- interpret with caution)
+13                oop_percapita_usd     23       2022      20.606725      20.107801      21.823973  LOW (short series, n<25 -- interpret with caution)
+14                      che_pct_gdp     23       2022       3.699365       3.693134       3.759129  LOW (short series, n<25 -- interpret with caution)
+15                che_percapita_usd     23       2022      82.321083      81.217975      90.246079  LOW (short series, n<25 -- interpret with caution)
+16     life_expectancy_birth_yrs_wb     64       2023      65.498000      67.655836      67.770966                                            standard
+17                  suicide_rate_wb     22       2021       5.320000       5.394601       5.398988  LOW (short series, n<25 -- interpret with caution)
+18                   che_pct_gdp_wb     23       2022       3.699365       3.693134       3.759129  LOW (short series, n<25 -- interpret with caution)
+19                  tfr_national_wb     64       2023       3.397000       3.221809       3.213084                                            standard
+20                 pm25_exposure_wb     31       2020      54.242787      54.444864      53.609404                                            standard

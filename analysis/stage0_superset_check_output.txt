@@ -1,0 +1,23 @@
+=== TB incidence cross-check ===
+  tb file: 1 indicators, 25 rows | e.g. ['Incidence of tuberculosis (per 100 000 population per year)']
+  whs file: 1 indicators, 25 rows | e.g. ['Incidence of tuberculosis (per 100 000 population per year)']
+
+=== HIV new infections cross-check ===
+  hiv file: 1 indicators, 25 rows | e.g. ['Number of new HIV infections']
+  whs file: 1 indicators, 25 rows | e.g. ['Number of new HIV infections']
+
+=== Malaria incidence cross-check ===
+  malaria file: 1 indicators, 24 rows | e.g. ['Estimated malaria incidence (per 1000 population at risk)']
+  whs file: 1 indicators, 24 rows | e.g. ['Estimated malaria incidence (per 1000 population at risk)']
+
+=== U5MR cross-check ===
+  child_mortality file: 1 indicators, 410 rows | e.g. ['Under-five mortality rate (probability of dying by age 5 per 1000 live births)']
+  whs file: 1 indicators, 410 rows | e.g. ['Under-five mortality rate (probability of dying by age 5 per 1000 live births)']
+
+=== Value-level spot check: TB incidence 2022 ===
+tb:
+    STARTYEAR DIMENSION (TYPE) DIMENSION (NAME)         Value
+228      2022              NaN              NaN  133 [60-234]
+whs:
+     STARTYEAR DIMENSION (TYPE) DIMENSION (NAME)         Value
+9665      2022              NaN              NaN  133 [60-234]

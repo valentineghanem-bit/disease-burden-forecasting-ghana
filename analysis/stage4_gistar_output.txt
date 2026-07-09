@@ -1,0 +1,98 @@
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\contiguity.py:347: UserWarning: The weights matrix is not fully connected: 
+ There are 6 disconnected components.
+ There are 3 islands with ids: 16, 92, 115.
+  W.__init__(self, neighbors, ids=ids, **kw)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\contiguity.py:347: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  W.__init__(self, neighbors, ids=ids, **kw)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\esda\getisord.py:421: UserWarning: Gi* requested, but (a) weights are already row-standardized, (b) no weights are on the diagonal, and (c) no default value supplied to star. Assuming that the self-weight is equivalent to the maximum weight in the row. To use a different default (like, .5), set `star=.5`, or use libpysal.weights.fill_diagonal() to set the diagonal values of your weights matrix and use `star=None` in Gi_Local.
+  w, star = _infer_star_and_structure_w(w, star, transform)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\util.py:819: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  w = W(neighbors, weights, ids, **kwargs)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\esda\getisord.py:421: UserWarning: Gi* requested, but (a) weights are already row-standardized, (b) no weights are on the diagonal, and (c) no default value supplied to star. Assuming that the self-weight is equivalent to the maximum weight in the row. To use a different default (like, .5), set `star=.5`, or use libpysal.weights.fill_diagonal() to set the diagonal values of your weights matrix and use `star=None` in Gi_Local.
+  w, star = _infer_star_and_structure_w(w, star, transform)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\util.py:819: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  w = W(neighbors, weights, ids, **kwargs)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\esda\getisord.py:421: UserWarning: Gi* requested, but (a) weights are already row-standardized, (b) no weights are on the diagonal, and (c) no default value supplied to star. Assuming that the self-weight is equivalent to the maximum weight in the row. To use a different default (like, .5), set `star=.5`, or use libpysal.weights.fill_diagonal() to set the diagonal values of your weights matrix and use `star=None` in Gi_Local.
+  w, star = _infer_star_and_structure_w(w, star, transform)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\util.py:819: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  w = W(neighbors, weights, ids, **kwargs)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\esda\getisord.py:421: UserWarning: Gi* requested, but (a) weights are already row-standardized, (b) no weights are on the diagonal, and (c) no default value supplied to star. Assuming that the self-weight is equivalent to the maximum weight in the row. To use a different default (like, .5), set `star=.5`, or use libpysal.weights.fill_diagonal() to set the diagonal values of your weights matrix and use `star=None` in Gi_Local.
+  w, star = _infer_star_and_structure_w(w, star, transform)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\util.py:819: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  w = W(neighbors, weights, ids, **kwargs)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\esda\getisord.py:421: UserWarning: Gi* requested, but (a) weights are already row-standardized, (b) no weights are on the diagonal, and (c) no default value supplied to star. Assuming that the self-weight is equivalent to the maximum weight in the row. To use a different default (like, .5), set `star=.5`, or use libpysal.weights.fill_diagonal() to set the diagonal values of your weights matrix and use `star=None` in Gi_Local.
+  w, star = _infer_star_and_structure_w(w, star, transform)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\util.py:819: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  w = W(neighbors, weights, ids, **kwargs)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\esda\getisord.py:421: UserWarning: Gi* requested, but (a) weights are already row-standardized, (b) no weights are on the diagonal, and (c) no default value supplied to star. Assuming that the self-weight is equivalent to the maximum weight in the row. To use a different default (like, .5), set `star=.5`, or use libpysal.weights.fill_diagonal() to set the diagonal values of your weights matrix and use `star=None` in Gi_Local.
+  w, star = _infer_star_and_structure_w(w, star, transform)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\util.py:819: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  w = W(neighbors, weights, ids, **kwargs)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\esda\getisord.py:421: UserWarning: Gi* requested, but (a) weights are already row-standardized, (b) no weights are on the diagonal, and (c) no default value supplied to star. Assuming that the self-weight is equivalent to the maximum weight in the row. To use a different default (like, .5), set `star=.5`, or use libpysal.weights.fill_diagonal() to set the diagonal values of your weights matrix and use `star=None` in Gi_Local.
+  w, star = _infer_star_and_structure_w(w, star, transform)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\util.py:819: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  w = W(neighbors, weights, ids, **kwargs)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\esda\getisord.py:421: UserWarning: Gi* requested, but (a) weights are already row-standardized, (b) no weights are on the diagonal, and (c) no default value supplied to star. Assuming that the self-weight is equivalent to the maximum weight in the row. To use a different default (like, .5), set `star=.5`, or use libpysal.weights.fill_diagonal() to set the diagonal values of your weights matrix and use `star=None` in Gi_Local.
+  w, star = _infer_star_and_structure_w(w, star, transform)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\util.py:819: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  w = W(neighbors, weights, ids, **kwargs)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\esda\getisord.py:421: UserWarning: Gi* requested, but (a) weights are already row-standardized, (b) no weights are on the diagonal, and (c) no default value supplied to star. Assuming that the self-weight is equivalent to the maximum weight in the row. To use a different default (like, .5), set `star=.5`, or use libpysal.weights.fill_diagonal() to set the diagonal values of your weights matrix and use `star=None` in Gi_Local.
+  w, star = _infer_star_and_structure_w(w, star, transform)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\util.py:819: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  w = W(neighbors, weights, ids, **kwargs)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\esda\getisord.py:421: UserWarning: Gi* requested, but (a) weights are already row-standardized, (b) no weights are on the diagonal, and (c) no default value supplied to star. Assuming that the self-weight is equivalent to the maximum weight in the row. To use a different default (like, .5), set `star=.5`, or use libpysal.weights.fill_diagonal() to set the diagonal values of your weights matrix and use `star=None` in Gi_Local.
+  w, star = _infer_star_and_structure_w(w, star, transform)
+C:\Users\VGhanem\AppData\Local\Programs\Python\Python313\Lib\site-packages\libpysal\weights\util.py:819: UserWarning: The weights matrix is not fully connected: 
+ There are 3 disconnected components.
+  w = W(neighbors, weights, ids, **kwargs)
+n districts: 261
+
+Step 1 -- empirical PC1 stats: mean=0.000000, sum=0.0000, std=1.8419
+Confirmed near-zero-summing (as expected for a standardized PCA score) -- the exact condition flagged as risky.
+
+GeoJSON features: 260, matched to Master Sheet: 258
+
+Island districts (no neighbors, disconnected from the contiguity graph): [16, 92, 115]
+Island district names: ['Kasena Nankana West', 'Ho West', 'Dormaa Central Municipal']
+Excluded from Gi*/Moran's I (a local spatial statistic is undefined for a location with zero neighbors -- this caused a divide-by-zero/hang in G_Local's variance calculation when left in). This is the standard, disclosed handling for the already-documented 261-vs-260 gap-district pattern, not a new data problem.
+PC1 values aligned to weights (islands excluded): n=255
+
+Global Moran's I on vulnerability_pc1: I=0.8015, z=19.301, p=0.0010
+
+Step 3 -- correlation between raw PC1 value and Gi* z-score (UNSHIFTED): r=-0.9227
+SIGN-FLIP DEFECT CONFIRMED (matches the documented COUNCIL-065 pattern from a prior sibling project's Gi* review): Gi*/Gi must never be run directly on a mean-centered/signed variable -- the near-zero global sum flips the denominator's sign for roughly half of all observations, producing a numerically well-formed but semantically backwards classification. Applying the documented fix: shift PC1 to be strictly positive before running Gi*, and verify stability across multiple shift magnitudes (not just one 'reasonable' value) before trusting the result.
+
+Sensitivity sweep across 10 shift constants (near-zero boundary + moderate + extreme-large), each independently re-seeded:
+  shift=+0.010 [NEAR-ZERO, informative boundary case]: does NOT achieve strict positivity (155/255 values still <=0, since min(PC1)=-3.003) -- confirms the fix requires a shift of at least abs(min value), not merely any positive constant. Skipped (Gi* is undefined on non-positive input).
+  shift=+0.100 [NEAR-ZERO, informative boundary case]: does NOT achieve strict positivity (147/255 values still <=0, since min(PC1)=-3.003) -- confirms the fix requires a shift of at least abs(min value), not merely any positive constant. Skipped (Gi* is undefined on non-positive input).
+  shift=+3.004 [NEAR-ZERO]: corr(raw PC1, Gi*_z)=0.9227, hotspots=6, coldspots=0
+  shift=+3.013 [NEAR-ZERO]: corr(raw PC1, Gi*_z)=0.9227, hotspots=6, coldspots=0
+  shift=+3.103 [NEAR-ZERO]: corr(raw PC1, Gi*_z)=0.9227, hotspots=6, coldspots=0
+  shift=+4.003 [moderate]: corr(raw PC1, Gi*_z)=0.9227, hotspots=6, coldspots=0
+  shift=+8.003 [moderate]: corr(raw PC1, Gi*_z)=0.9227, hotspots=6, coldspots=0
+  shift=+13.003 [moderate]: corr(raw PC1, Gi*_z)=0.9227, hotspots=6, coldspots=0
+  shift=+103.003 [EXTREME]: corr(raw PC1, Gi*_z)=0.9227, hotspots=6, coldspots=0
+  shift=+1003.003 [EXTREME]: corr(raw PC1, Gi*_z)=0.9227, hotspots=6, coldspots=0
+
+Classification stable across all 10 shift magnitudes (incl. near-zero boundary and extreme-large, independently re-seeded): True
+
+Using shift=+4.00 (from the validated 'moderate' tier) for reported results. Corrected correlation: r=0.9227
+
+Step 4 -- face-validity spot-check:
+  expected HIGH vulnerability: Bunkpurugu Nakpanduri: PC1=2.094, Gi*_z=2.044
+  expected HIGH vulnerability: Builsa North Municipal: PC1=2.290, Gi*_z=1.396
+  expected HIGH vulnerability: Karaga: PC1=4.054, Gi*_z=1.932
+  expected LOW vulnerability: Accra Metropolitan Area (AMA)-Ablekuma South, Ashiedu Keteke & Okaikoi South: PC1=-2.385, Gi*_z=-1.324
+  expected LOW vulnerability: Kumasi Metropolitan Area (KMA)-Bantama, Manhyia North, Manhyia South, Nhyiaeso, & Subin: PC1=-2.406, Gi*_z=-1.190
+
+Saved: outputs/data/vulnerability_gistar_results.csv

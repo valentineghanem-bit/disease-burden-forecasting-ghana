@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it as below."
+title: "Forecasting Ghana's National Health and Demographic Indicators to 2030, with District-Level Structural-Vulnerability Context: A Validated Multi-Indicator Time-Series Analysis"
+authors:
+  - family-names: Ghanem
+    given-names: Valentine Golden
+    orcid: "https://orcid.org/0009-0002-8332-0220"
+    affiliation: "Ghana COCOBOD Cocoa Clinic, Accra, Ghana"
+date-released: 2026-07-09
+version: "1.0.0"
+license: MIT
+repository-code: "https://github.com/valentineghanem-bit/disease-burden-forecasting-ghana"
+keywords:
+  - Ghana
+  - disease burden forecasting
+  - time-series analysis
+  - ARIMA
+  - spatial epidemiology
+  - structural vulnerability
+  - Sustainable Development Goals

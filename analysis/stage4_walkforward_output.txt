@@ -1,0 +1,15 @@
+=== TIER 1: u5mr_who (n=92) -- LSTM-eligible pending validation ===
+n=92, folds=10
+ETS        MAE=0.097  MAPE=0.22%
+ARIMA      MAE=0.080  MAPE=0.18%
+LSTM(h=8)  MAE=6.335 (seed SD mean=1.875)  MAPE=14.08%
+LSTM(h=32) MAE=1.402 (seed SD mean=0.920)  MAPE=3.10%
+
+=== TIER 2: tb_incidence_per100k (n=25) -- Prophet/BSTS-only expected ===
+n=25, folds=6
+ETS        MAE=0.305  MAPE=0.23%
+ARIMA      MAE=0.377  MAPE=0.29%
+LSTM(h=8)  MAE=4.966 (seed SD mean=0.952)  MAPE=3.68%
+LSTM(h=32) MAE=3.095 (seed SD mean=0.303)  MAPE=2.31%
+
+Saved: outputs/data/walkforward_validation_results.csv
