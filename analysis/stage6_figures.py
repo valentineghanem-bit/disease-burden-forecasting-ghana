@@ -106,6 +106,10 @@ s = panel[["year", "malaria_incidence_per1000atrisk"]].dropna()
 ax.plot(s["year"], s["malaria_incidence_per1000atrisk"], color="#cc79a7", lw=1.8, label="Observed")
 row = fc[fc["indicator"] == "malaria_incidence_per1000atrisk"].iloc[0]
 ax.plot([s["year"].max(), 2030], [s["malaria_incidence_per1000atrisk"].iloc[-1], row["arima_2030"]], "--", color="#cc79a7", lw=1.5, label="ARIMA")
+ax.fill_between([s["year"].max(), 2030],
+                [s["malaria_incidence_per1000atrisk"].iloc[-1], row["arima_ci_low"]],
+                [s["malaria_incidence_per1000atrisk"].iloc[-1], row["arima_ci_high"]],
+                color="#cc79a7", alpha=0.15, label="ARIMA 95% CI", zorder=1)
 ax.plot([s["year"].max(), 2030], [s["malaria_incidence_per1000atrisk"].iloc[-1], row["ets_2030"]], ":", color="#cc79a7", lw=1.5, label="Exp. smoothing")
 ax.set_title("C. Malaria forecast: model gap narrowed\nby correct order selection (see Discussion)", fontsize=9.5, loc="left")
 ax.set_ylabel("Cases per 1,000 population at risk")
