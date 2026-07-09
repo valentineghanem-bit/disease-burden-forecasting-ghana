@@ -176,7 +176,7 @@ if(C.caveat){var cb=document.getElementById('caveatBox');cb.style.display='block
 document.getElementById('foot').innerHTML='Interactive single-file HI-EI dashboard — works offline. Smart controls: metric switch, cluster toggles, focus filter, sort, threshold slider, '+(C.hasX?'what-if predictor (OLS), ':'')+'zoomable maps, live summary, CSV/PNG/self-download. Data: published '+UNIT+' values for this study.';
 document.getElementById('focusLabel').textContent='Focus '+UNIT;
 document.getElementById('allRegionsOpt').textContent='All '+UNITS;
-document.getElementById('tiersCap').textContent=UNITS_CAP+' per LISA class.';
+(function(){var classified=R.filter(function(d){return d.lisa;}).length,excluded=R.length-classified;document.getElementById('tiersCap').textContent=UNITS_CAP+' per LISA class ('+classified+' of '+R.length+' classified'+(excluded>0?'; '+excluded+' excluded from spatial statistics':'')+').';})();
 document.getElementById('boxCap').textContent='Distribution of the outcome across '+UNITS+', grouped by spatial-cluster class.';
 document.getElementById('mapCap').textContent=UNITS_CAP+' coloured by value · scroll/drag to zoom & pan · click to filter.';
 document.getElementById('kpis').innerHTML=KPIS.map(function(k){return'<div class="kpi"><div class="v">'+k.v+'</div><div class="l">'+k.l+'</div><div class="s">'+k.s+'</div></div>';}).join('');
