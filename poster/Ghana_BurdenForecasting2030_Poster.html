@@ -136,7 +136,22 @@ document.getElementById('cap1').textContent=UNIT_CAP+' '+C.outcome+', coloured b
 document.getElementById('t2').innerHTML='A clear <span class="hl">north–south gradient</span> separates the most- and least-affected '+UNITS+', the signature of structural inequity.';
 document.getElementById('t3').innerHTML=C.hasX?('Across '+UNITS+', '+C.outcome+' tracks <span class="hl">'+C.cov+'</span> — the social-determinant pathway the analysis isolates.'):('Mean <span class="hl">'+C.outcome+'</span> differs sharply across spatial-cluster classes — high-high '+UNITS+' carry the heaviest burden.');
 document.getElementById('cap3').textContent=C.hasX?(C.outcome+' vs '+C.cov+', '+R.length+' '+UNITS+', with OLS fit.'):('Mean '+C.outcome+' by LISA cluster class (HH/HL/LH/LL/NS).');
-document.getElementById('t4').innerHTML='Local Moran&#39;s I confirms a significant <span class="hl">high-high cluster</span> and a complementary low-low cluster — the spatial fingerprint of the disparity.';
+(function(){
+  var hhCount=R.filter(function(d){return d.lisa==='HH';}).length;
+  var llCount=R.filter(function(d){return d.lisa==='LL';}).length;
+  var stat=(C.clusterLabel||'Local Moran')+(C.clusterLabel?'':'’s I');
+  var t4text;
+  if(hhCount>0&&llCount>0){
+    t4text=stat+' confirms a significant <span class="hl">high-high cluster</span> ('+hhCount+' '+UNITS+') and a complementary low-low cluster ('+llCount+' '+UNITS+') — the spatial fingerprint of the disparity.';
+  }else if(hhCount>0){
+    t4text=stat+' confirms a significant <span class="hl">high-high cluster</span> ('+hhCount+' '+UNITS+'), with no significant low-low cluster detected at this threshold — the spatial fingerprint is one-sided, not a two-pole disparity.';
+  }else if(llCount>0){
+    t4text=stat+' confirms a significant <span class="hl">low-low cluster</span> ('+llCount+' '+UNITS+'), with no significant high-high cluster detected at this threshold.';
+  }else{
+    t4text=stat+' found no significant high-high or low-low clusters at this threshold.';
+  }
+  document.getElementById('t4').innerHTML=t4text;
+})();
 var big=KPIS.slice(0,4);
 document.getElementById('pBig').innerHTML=big.map(function(k){return'<div class="bn"><div class="v">'+k.v+'</div><div class="l">'+k.l+'</div><div class="s">'+k.s+'</div></div>';}).join('');
 document.getElementById('pFoot').innerHTML='<b>Data:</b> '+(C.data||'Ghana district-level surveillance')+' · <b>Methods:</b> '+(C.methods||'Global/Local Moran&#39;s I · Gi* · ML (RF/XGBoost) · STROBE/RECORD')+'<br/><b>Repo:</b> github.com/valentineghanem-bit/'+C.repo;

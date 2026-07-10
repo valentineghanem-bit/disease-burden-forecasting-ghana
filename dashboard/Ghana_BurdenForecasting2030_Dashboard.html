@@ -124,7 +124,7 @@ input[type=range]{width:155px;accent-color:var(--primary);cursor:pointer}
 <div class="kpis" id="kpis"></div>
 <div class="grid">
  <div class="card span6 mapcard"><h3 id="mapTitle"></h3><p class="cap" id="mapCap">Districts coloured by value · scroll/drag to zoom &amp; pan · click to filter.</p><div class="zoomctl"><button type="button" id="zPlusP" title="Zoom in">+</button><button type="button" id="zMinusP" title="Zoom out">−</button><button type="button" id="zResetP" title="Reset" style="font-size:12px">⟲</button></div><div class="chart map" id="mapP"></div><div class="maplegend" id="legP"></div></div>
- <div class="card span6 mapcard"><h3>Spatial cluster typology (LISA)</h3><p class="cap">Local Moran's I clusters · scroll/drag to zoom &amp; pan · click to filter.</p><div class="zoomctl"><button type="button" id="zPlusL" title="Zoom in">+</button><button type="button" id="zMinusL" title="Zoom out">−</button><button type="button" id="zResetL" title="Reset" style="font-size:12px">⟲</button></div><div class="chart map" id="mapLisa"></div><div class="maplegend" id="legLisa"></div></div>
+ <div class="card span6 mapcard"><h3 id="lisaMapTitle">Spatial cluster typology (LISA)</h3><p class="cap" id="lisaMapCap">Local Moran's I clusters · scroll/drag to zoom &amp; pan · click to filter.</p><div class="zoomctl"><button type="button" id="zPlusL" title="Zoom in">+</button><button type="button" id="zMinusL" title="Zoom out">−</button><button type="button" id="zResetL" title="Reset" style="font-size:12px">⟲</button></div><div class="chart map" id="mapLisa"></div><div class="maplegend" id="legLisa"></div></div>
  <div class="card span5"><h3 id="rankTitle"></h3><p class="cap" id="rankCap">Colour = LISA cluster · dashed line = threshold · click a bar to filter.</p><div class="chart" id="rank"></div></div>
  <div class="card span4"><h3 id="scTitle"></h3><p class="cap">Regression + gold ★ what-if prediction.</p><div class="chart" id="scatter"></div></div>
  <div class="card span3"><h3>Cluster tier counts</h3><p class="cap" id="tiersCap">Regions per LISA class.</p><div class="chart" id="tiers"></div></div>
@@ -177,6 +177,8 @@ document.getElementById('foot').innerHTML='Interactive single-file HI-EI dashboa
 document.getElementById('focusLabel').textContent='Focus '+UNIT;
 document.getElementById('allRegionsOpt').textContent='All '+UNITS;
 (function(){var classified=R.filter(function(d){return d.lisa;}).length,excluded=R.length-classified;document.getElementById('tiersCap').textContent=UNITS_CAP+' per '+(C.clusterLabel||'LISA')+' class ('+classified+' of '+R.length+' classified'+(excluded>0?'; '+excluded+' excluded from spatial statistics':'')+').';})();
+document.getElementById('lisaMapTitle').textContent='Spatial cluster typology ('+(C.clusterLabel||'LISA')+')';
+document.getElementById('lisaMapCap').textContent=(C.clusterLabel||'Local Moran\'s I')+' clusters · scroll/drag to zoom & pan · click to filter.';
 document.getElementById('boxCap').textContent='Distribution of the outcome across '+UNITS+', grouped by spatial-cluster class.';
 document.getElementById('mapCap').textContent=UNITS_CAP+' coloured by value · scroll/drag to zoom & pan · click to filter.';
 document.getElementById('kpis').innerHTML=KPIS.map(function(k){return'<div class="kpi"><div class="v">'+k.v+'</div><div class="l">'+k.l+'</div><div class="s">'+k.s+'</div></div>';}).join('');
