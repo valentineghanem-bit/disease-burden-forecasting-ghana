@@ -132,6 +132,8 @@ STROBE (Strengthening the Reporting of Observational Studies in Epidemiology) fo
 
 This analysis uses exclusively public-domain, aggregate, de-identified secondary data (WHO, World Bank). No individual-level records were accessed at any point in this pipeline. Consistent with standard practice for secondary analysis of publicly available, aggregate, de-identified data involving no human-participant contact, no ethics committee approval was sought or required.
 
+**Competing interests.** The author declares no competing interests. No funding was received for this work.
+
 ## 11. Citation
 
 Ghanem VG. A reproducible workflow and source-provenance audit for forecasting short national health-indicator panels: a worked example from Ghana using WHO Global Health Observatory and World Bank data. 2026.
