@@ -1,4 +1,0 @@
-threshold,hotspots,coldspots
-p<0.05,6,0
-p<0.10,20,0
-FDR-BH,45,32

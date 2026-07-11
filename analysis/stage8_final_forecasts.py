@@ -74,6 +74,10 @@ for col, best_order in order_map.items():
 
 out = pd.DataFrame(results)
 out.to_csv("../outputs/data/national_forecasts_2030.csv", index=False)
+# Also publish as the Master CSV deliverable, so this one script is the sole source of both
+# files and they can never drift apart (Phase 12 finding: the Master CSV had been hand-copied
+# once and gone stale after a later methodological correction re-ran this script alone).
+out.to_csv("../outputs/data/Ghana_BurdenForecasting2030_MASTER_national.csv", index=False)
 comp_df = pd.DataFrame(comparison)
 comp_df.to_csv("../outputs/data/forecast_order_comparison.csv", index=False)
 
