@@ -10,6 +10,16 @@ problems are fixed by rebuilding from scratch against the current, narrowed manu
 scope (21 national indicators, no spatial/district content) using only inline SVG charts
 generated here and vanilla JS for the sortable table -- no matplotlib PNG/base64 anywhere
 in the shipped HTML.
+
+2026-07-11 update: restyled to adopt the project's bespoke visual design language (gradient
+masthead/header, accent-bar KPI cards, numbered section badges, dark-mode support, gold
+takeaway callout) extracted from `_system/bespoke/bespoke_dash_tmpl.html` and
+`bespoke_poster_tmpl.html`. Those templates embed the full ECharts JS library (~1 MB each) to
+achieve that look, which conflicts with this project's own <60 KB / vanilla-JS-only ceiling --
+so only the CSS/HTML design tokens were ported, not the ECharts dependency. Chart rendering
+stays inline SVG (trend_svg, margin_svg); data-encoding colours stay the Okabe-Ito palette
+already used in the manuscript figures. Only chrome (headers, cards, footers) uses the bespoke
+ink/gold/gradient tokens.
 """
 import pandas as pd
 import numpy as np
@@ -29,6 +39,13 @@ PINK = "#cc79a7"
 ORANGE = "#d55e00"
 GREY = "#555555"
 BG = "#ffffff"
+
+# ---------- Bespoke chrome tokens (headers/cards/footers only -- never used for data encoding) ----------
+INK = "#16222e"
+MUTED = "#5b6b7b"
+PRIMARY = "#1a5276"
+PRIMARY2 = "#3a93cf"
+GOLD = "#d4a017"
 
 LABELS = {
     "life_expectancy_birth_yrs_who": "Life expectancy (WHO-GHO), yrs",
@@ -202,29 +219,57 @@ DASHBOARD_HTML = f"""<!doctype html>
 <title>Ghana Burden Forecasting 2030 — Dashboard &amp; Source-Provenance Audit</title>
 <style>
   :root {{
-    --primary: {BLUE}; --accent: {ORANGE}; --green: {GREEN}; --pink: {PINK};
-    --bg: #f7f8fa; --card: #ffffff; --text: #1b1f24; --muted: #5a6472; --border: #e2e5e9;
+    --primary: {PRIMARY}; --primary2: {PRIMARY2}; --gold: {GOLD}; --ink: {INK};
+    --bg: #f4f6f8; --card: #ffffff; --text: {INK}; --muted: {MUTED}; --border: #dde3e8;
   }}
+  [data-theme="dark"] {{
+    --bg: #0f1720; --card: #182430; --text: #e7edf3; --muted: #93a3b3; --border: #2a3949;
+  }}
+  @media (prefers-reduced-motion: reduce) {{ * {{ animation: none !important; transition: none !important; }} }}
   * {{ box-sizing: border-box; }}
-  body {{ margin:0; font-family: -apple-system, Segoe UI, Arial, sans-serif; background:var(--bg); color:var(--text); }}
-  header {{ background: var(--primary); color:#fff; padding:20px 24px; }}
-  header h1 {{ margin:0; font-size:1.3rem; }}
-  header p {{ margin:4px 0 0; font-size:0.85rem; opacity:0.9; }}
-  main {{ max-width:1100px; margin:0 auto; padding:20px; }}
+  body {{ margin:0; font-family: -apple-system, "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--text); transition: background .2s, color .2s; }}
+  header.top {{
+    background: linear-gradient(135deg, var(--primary), var(--primary2));
+    color:#fff; padding:26px 28px; position:relative; overflow:hidden;
+  }}
+  header.top .brand {{
+    position:absolute; top:20px; right:28px; background:rgba(255,255,255,0.16);
+    border:1px solid rgba(255,255,255,0.4); border-radius:999px; padding:5px 14px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+  }}
+  header.top h1 {{ margin:0 160px 6px 0; font-size:1.35rem; line-height:1.3; max-width:900px; }}
+  header.top p {{ margin:0; font-size:0.85rem; opacity:0.92; }}
+  .toolbar {{
+    max-width:1100px; margin:0 auto; padding:14px 20px 0; display:flex; gap:10px;
+    align-items:center; flex-wrap:wrap; font-size:0.82rem;
+  }}
+  .toolbar input#search {{ padding:7px 12px; border:1px solid var(--border); border-radius:6px; font-size:0.82rem; width:220px; background:var(--card); color:var(--text); }}
+  .toolbar button {{
+    padding:7px 12px; border:1px solid var(--border); border-radius:6px; background:var(--card);
+    color:var(--text); font-size:0.78rem; cursor:pointer; font-weight:600;
+  }}
+  .toolbar button:hover {{ border-color:var(--primary); color:var(--primary); }}
+  .toolbar button:focus-visible, .toolbar input#search:focus-visible {{ outline:2px solid var(--primary2); outline-offset:1px; }}
+  main {{ max-width:1100px; margin:0 auto; padding:18px 20px 20px; }}
   .kpi-row {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:20px; }}
-  .kpi {{ background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }}
+  .kpi {{ background:var(--card); border:1px solid var(--border); border-left:4px solid var(--kc, var(--primary)); border-radius:8px; padding:14px 16px; }}
   .kpi .label {{ font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.03em; }}
   .kpi .value {{ font-size:1.5rem; font-weight:700; margin-top:4px; }}
   .kpi .delta {{ font-size:0.78rem; color:var(--muted); margin-top:2px; }}
   .grid {{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }}
-  @media (max-width:800px) {{ .grid {{ grid-template-columns:1fr; }} }}
+  @media (max-width:800px) {{
+    .grid {{ grid-template-columns:1fr; }}
+    header.top h1 {{ margin-right:0; }}
+    header.top .brand {{ position:static; display:inline-block; margin-top:10px; }}
+  }}
   .card {{ background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; }}
-  .card h2 {{ margin:0 0 10px; font-size:1rem; }}
+  .card h2 {{ margin:0 0 10px; font-size:1rem; color:var(--primary); }}
+  [data-theme="dark"] .card h2 {{ color:var(--primary2); }}
   .card p.note {{ font-size:0.78rem; color:var(--muted); margin:8px 0 0; }}
   table {{ width:100%; border-collapse:collapse; font-size:0.82rem; }}
   th, td {{ padding:6px 8px; text-align:left; border-bottom:1px solid var(--border); }}
-  th {{ cursor:pointer; user-select:none; background:#fafbfc; position:sticky; top:0; white-space:nowrap; }}
-  th:hover {{ background:#eef1f4; }}
+  th {{ cursor:pointer; user-select:none; background:var(--bg); position:sticky; top:0; white-space:nowrap; }}
+  th:hover {{ color:var(--primary); }}
   td:nth-child(2), td:nth-child(3), td:nth-child(5), td:nth-child(6), td:nth-child(7), td:nth-child(8) {{ text-align:right; font-variant-numeric: tabular-nums; }}
   .tag {{ padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:600; }}
   .tag.std {{ background:#e3f2ec; color:{GREEN}; }}
@@ -232,22 +277,28 @@ DASHBOARD_HTML = f"""<!doctype html>
   .table-wrap {{ max-height:520px; overflow:auto; border:1px solid var(--border); border-radius:8px; }}
   footer {{ max-width:1100px; margin:0 auto; padding:16px 20px 40px; font-size:0.78rem; color:var(--muted); }}
   a {{ color:var(--primary); }}
-  .filter-row {{ margin-bottom:10px; display:flex; gap:8px; align-items:center; font-size:0.82rem; }}
-  input#search {{ padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.82rem; width:220px; }}
+  [data-theme="dark"] a {{ color:var(--primary2); }}
 </style>
 </head>
 <body>
-<header>
+<header class="top">
+  <span class="brand">Reproducible workflow · Ghana 2030</span>
   <h1>A Reproducible Workflow and Source-Provenance Audit for Forecasting Short National Health-Indicator Panels: A Worked Example from Ghana</h1>
   <p>25 indicators assembled, 21 forecastable · 6 documented data-integrity corrections · last rebuilt {BUILD_DATE}</p>
 </header>
+<div class="toolbar">
+  <input id="search" type="text" placeholder="Filter indicator…" onkeyup="filterTable()" aria-label="Filter indicator">
+  <button onclick="exportCSV()" aria-label="Export table as CSV">Export CSV</button>
+  <button onclick="resetView()" aria-label="Reset filters and sorting">Reset</button>
+  <button onclick="toggleTheme()" aria-label="Toggle dark mode">Toggle theme</button>
+</div>
 <main>
   <div class="kpi-row">
-    <div class="kpi"><div class="label">Documented corrections</div><div class="value">6</div><div class="delta">source-provenance pitfalls fixed (Table 1)</div></div>
-    <div class="kpi"><div class="label">Under-five mortality, 2030</div><div class="value">{u5mr_row['arima_2030']:.1f}</div><div class="delta">per 1,000 live births · SDG 3.2 target: 25</div></div>
-    <div class="kpi"><div class="label">Order-selection near-ties</div><div class="value">{n_near_tie} / 21</div><div class="delta">uniform ARIMA(1,1,1) not decisively rejected</div></div>
-    <div class="kpi"><div class="label">Structural breaks found</div><div class="value">malaria, WB life exp.</div><div class="delta">decisive: {n_covid_decisive} of {n_covid_testable} testable (COVID-2020), {n_currency_decisive} of {n_currency_testable} (currency-2022)</div></div>
-    <div class="kpi"><div class="label">Forecasting method</div><div class="value">ARIMA + ETS</div><div class="delta">LSTM did not outperform (walk-forward validated)</div></div>
+    <div class="kpi" style="--kc:{BLUE}"><div class="label">Documented corrections</div><div class="value">6</div><div class="delta">source-provenance pitfalls fixed (Table 1)</div></div>
+    <div class="kpi" style="--kc:{GREEN}"><div class="label">Under-five mortality, 2030</div><div class="value">{u5mr_row['arima_2030']:.1f}</div><div class="delta">per 1,000 live births · SDG 3.2 target: 25</div></div>
+    <div class="kpi" style="--kc:{PINK}"><div class="label">Order-selection near-ties</div><div class="value">{n_near_tie} / 21</div><div class="delta">uniform ARIMA(1,1,1) not decisively rejected</div></div>
+    <div class="kpi" style="--kc:{ORANGE}"><div class="label">Structural breaks found</div><div class="value">malaria, WB life exp.</div><div class="delta">decisive: {n_covid_decisive} of {n_covid_testable} testable (COVID-2020), {n_currency_decisive} of {n_currency_testable} (currency-2022)</div></div>
+    <div class="kpi" style="--kc:#7d3c98"><div class="label">Forecasting method</div><div class="value">ARIMA + ETS</div><div class="delta">LSTM did not outperform (walk-forward validated)</div></div>
   </div>
 
   <div class="card">
@@ -286,10 +337,6 @@ DASHBOARD_HTML = f"""<!doctype html>
 
   <div class="card">
     <h2>Full forecast table</h2>
-    <div class="filter-row">
-      <input id="search" type="text" placeholder="Filter indicator…" onkeyup="filterTable()">
-      <span style="color:var(--muted)">Click column headers to sort</span>
-    </div>
     <div class="table-wrap">
     <table id="fctable">
       <thead><tr>
@@ -314,6 +361,15 @@ DASHBOARD_HTML = f"""<!doctype html>
   <a href="https://github.com/valentineghanem-bit/disease-burden-forecasting-ghana" target="_blank" rel="noopener">disease-burden-forecasting-ghana</a>.
 </footer>
 <script>
+(function() {{
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {{
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }}
+}})();
+function toggleTheme() {{
+  const html = document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}}
 function filterTable() {{
   const q = document.getElementById('search').value.toLowerCase();
   document.querySelectorAll('#fctable tbody tr').forEach(function(row) {{
@@ -335,6 +391,28 @@ function sortTable(colIdx) {{
     return 0;
   }});
   rows.forEach(function(r) {{ tbody.appendChild(r); }});
+}}
+const ORIGINAL_ROWS = document.querySelector('#fctable tbody').innerHTML;
+function resetView() {{
+  document.getElementById('search').value = '';
+  document.querySelector('#fctable tbody').innerHTML = ORIGINAL_ROWS;
+  sortDir = {{}};
+}}
+function exportCSV() {{
+  const headerCells = Array.from(document.querySelectorAll('#fctable thead tr:last-child th'));
+  const header = headerCells.map(function(th) {{ return '"' + th.textContent.trim().replace(/"/g, '""') + '"'; }});
+  const rows = Array.from(document.querySelectorAll('#fctable tbody tr')).filter(function(r) {{ return r.style.display !== 'none'; }});
+  const lines = [header.join(',')];
+  rows.forEach(function(row) {{
+    const cells = Array.from(row.cells).map(function(td) {{ return '"' + td.textContent.trim().replace(/"/g, '""') + '"'; }});
+    lines.push(cells.join(','));
+  }});
+  const blob = new Blob([lines.join('\\n')], {{ type: 'text/csv' }});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ghana_forecast_2030_table.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }}
 </script>
 </body>
@@ -372,39 +450,64 @@ POSTER_HTML = f"""<!doctype html>
 <meta charset="utf-8">
 <title>Ghana Burden Forecasting 2030 — Poster</title>
 <style>
-  :root {{ --primary:{BLUE}; --accent:{ORANGE}; --green:{GREEN}; --pink:{PINK}; --border:#dde1e6; --muted:#5a6472; }}
+  :root {{
+    --primary:{PRIMARY}; --primary2:{PRIMARY2}; --gold:{GOLD}; --ink:{INK}; --muted:{MUTED};
+    --border:#dde1e6; --card:#f7f8fa;
+  }}
   * {{ box-sizing:border-box; }}
-  body {{ margin:0; font-family: Georgia, 'Times New Roman', serif; background:#fff; color:#1b1f24; }}
-  .poster {{ max-width:1400px; margin:0 auto; padding:28px 36px; }}
-  .masthead {{ border-bottom:4px solid var(--primary); padding-bottom:14px; margin-bottom:20px; }}
-  .masthead h1 {{ margin:0; font-size:2rem; color:var(--primary); }}
-  .masthead .authors {{ font-size:1.05rem; margin-top:6px; }}
-  .masthead .affil {{ font-size:0.9rem; color:var(--muted); margin-top:2px; }}
+  body {{ margin:0; font-family: Georgia, 'Times New Roman', serif; background:#fff; color:var(--ink); }}
+  .poster {{ max-width:1400px; margin:0 auto; }}
+  .masthead {{
+    background: linear-gradient(135deg, var(--primary), var(--primary2));
+    color:#fff; padding:26px 36px 22px;
+  }}
+  .masthead .kicker {{ font-family:Arial, sans-serif; font-size:0.75rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85; margin-bottom:6px; }}
+  .masthead h1 {{ margin:0; font-size:2rem; line-height:1.25; }}
+  .masthead .authors {{ font-size:1.05rem; margin-top:10px; }}
+  .masthead .affil {{ font-size:0.9rem; opacity:0.9; margin-top:2px; }}
+  .masthead .badges {{ margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; font-family:Arial, sans-serif; }}
+  .masthead .badges span {{ background:rgba(255,255,255,0.16); border:1px solid rgba(255,255,255,0.4); border-radius:999px; padding:3px 11px; font-size:0.68rem; font-weight:600; }}
+  .hook {{ background:var(--ink); color:#fff; font-family:Arial, sans-serif; font-size:1.05rem; font-weight:700; padding:12px 36px; line-height:1.4; }}
+  .body-wrap {{ padding:22px 36px 0; }}
   .cols {{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:26px; }}
   @media (max-width:1000px) {{ .cols {{ grid-template-columns:1fr; }} }}
   section {{ margin-bottom:18px; }}
-  h2 {{ font-family: Arial, sans-serif; font-size:1.05rem; color:var(--primary); border-bottom:2px solid var(--border); padding-bottom:4px; margin:0 0 8px; }}
+  h2 {{ font-family: Arial, sans-serif; font-size:1.02rem; color:var(--primary); border-bottom:2px solid var(--border); padding-bottom:5px; margin:0 0 8px; display:flex; align-items:center; gap:8px; }}
+  h2 .n {{
+    display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
+    border-radius:50%; background:var(--primary); color:#fff; font-size:0.72rem; font-weight:700; flex:none;
+  }}
   p {{ font-size:0.92rem; line-height:1.45; margin:0 0 10px; }}
-  .kpi-strip {{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }}
-  .kpi {{ font-family: Arial, sans-serif; background:#f7f8fa; border:1px solid var(--border); border-radius:8px; padding:10px 14px; flex:1; min-width:150px; }}
-  .kpi .v {{ font-size:1.3rem; font-weight:700; color:var(--primary); }}
+  .kpi-strip {{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }}
+  .kpi {{ font-family: Arial, sans-serif; background:var(--card); border:1px solid var(--border); border-bottom:3px solid var(--kc, var(--primary)); border-radius:8px; padding:10px 14px; flex:1; min-width:150px; }}
+  .kpi .v {{ font-size:1.35rem; font-weight:700; color:var(--primary); }}
   .kpi .l {{ font-size:0.68rem; text-transform:uppercase; color:var(--muted); }}
   table {{ width:100%; border-collapse:collapse; font-family: Arial, sans-serif; font-size:0.78rem; }}
   th, td {{ padding:5px 6px; border-bottom:1px solid var(--border); text-align:left; }}
   td:nth-child(2), td:nth-child(3), td:nth-child(4) {{ text-align:right; font-variant-numeric: tabular-nums; }}
-  th {{ background:#f7f8fa; }}
+  th {{ background:var(--card); }}
   .tag {{ padding:1px 7px; border-radius:8px; font-size:0.68rem; font-weight:600; }}
   .tag.std {{ background:#e3f2ec; color:{GREEN}; }}
   .tag.low {{ background:#fdecec; color:#b3261e; }}
-  footer {{ font-family: Arial, sans-serif; font-size:0.75rem; color:var(--muted); border-top:1px solid var(--border); margin-top:20px; padding-top:10px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }}
+  .takeaway {{
+    font-family: Arial, sans-serif; background:#fdf6e3; border:1px solid var(--gold); border-left:5px solid var(--gold);
+    border-radius:6px; padding:14px 18px; margin:6px 36px 18px;
+  }}
+  .takeaway .lbl {{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--gold); margin-bottom:4px; }}
+  .takeaway p {{ margin:0; font-size:0.92rem; }}
+  footer {{
+    font-family: Arial, sans-serif; font-size:0.75rem; color:#fff;
+    background: linear-gradient(135deg, var(--ink), var(--primary));
+    padding:16px 36px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;
+  }}
+  footer a {{ color:#bfe0f5; }}
   .figcap {{ font-family: Arial, sans-serif; font-size:0.72rem; color:var(--muted); margin-top:4px; }}
-  .repo-qr {{ text-align:center; font-family: Arial, sans-serif; }}
-  .repo-qr svg {{ display:block; margin:0 auto 4px; }}
-  .repo-qr .label {{ font-size:0.68rem; color:var(--muted); }}
+  .repo-box {{ font-family: Arial, sans-serif; text-align:center; border:1px solid rgba(255,255,255,0.4); border-radius:8px; padding:8px 14px; }}
+  .repo-box .label {{ font-size:0.68rem; opacity:0.85; margin-bottom:2px; }}
   @page {{ size: A0 portrait; margin: 15mm; }}
   @media print {{
     body {{ background:#fff; }}
-    .poster {{ max-width:none; padding:0; }}
+    .poster {{ max-width:none; }}
     section {{ break-inside: avoid; }}
     .cols {{ grid-template-columns:1fr 1fr 1fr !important; }}
     a {{ color:inherit; text-decoration:none; }}
@@ -414,31 +517,36 @@ POSTER_HTML = f"""<!doctype html>
 <body>
 <div class="poster">
   <div class="masthead">
+    <div class="kicker">Reproducible workflow · Methods paper</div>
     <h1>A Reproducible Workflow and Source-Provenance Audit for Forecasting Short National Health-Indicator Panels: A Worked Example from Ghana</h1>
     <div class="authors">Valentine Golden Ghanem</div>
     <div class="affil">Ghana COCOBOD Cocoa Clinic, Accra, Ghana · ORCID 0009-0002-8332-0220</div>
+    <div class="badges"><span>STROBE reporting</span><span>MIT-licensed code</span><span>Public-domain data</span><span>Open repository</span></div>
   </div>
 
+  <div class="hook">Only 1 of 21 national indicators matched a uniform ARIMA(1,1,1) order — order selection is not a formality, and a decisive currency-crisis structural break moved the malaria forecast further than order selection did.</div>
+
+  <div class="body-wrap">
   <div class="kpi-strip">
-    <div class="kpi"><div class="v">6</div><div class="l">Documented source-provenance corrections (Table 1)</div></div>
-    <div class="kpi"><div class="v">{u5mr_row['arima_2030']:.1f} / 1,000</div><div class="l">Under-5 mortality, 2030 (SDG target: 25)</div></div>
-    <div class="kpi"><div class="v">{n_matched_111} of 21</div><div class="l">Series where uniform (1,1,1) matched exactly</div></div>
-    <div class="kpi"><div class="v">{n_near_tie} of 21</div><div class="l">Order-selection near-ties (ΔAICc &lt; 2)</div></div>
-    <div class="kpi"><div class="v">malaria, WB life exp.</div><div class="l">Decisive structural breaks found (Table 5)</div></div>
+    <div class="kpi" style="--kc:{BLUE}"><div class="v">6</div><div class="l">Documented source-provenance corrections (Table 1)</div></div>
+    <div class="kpi" style="--kc:{GREEN}"><div class="v">{u5mr_row['arima_2030']:.1f} / 1,000</div><div class="l">Under-5 mortality, 2030 (SDG target: 25)</div></div>
+    <div class="kpi" style="--kc:{PINK}"><div class="v">{n_matched_111} of 21</div><div class="l">Series where uniform (1,1,1) matched exactly</div></div>
+    <div class="kpi" style="--kc:{ORANGE}"><div class="v">{n_near_tie} of 21</div><div class="l">Order-selection near-ties (ΔAICc &lt; 2)</div></div>
+    <div class="kpi" style="--kc:#7d3c98"><div class="v">malaria, WB life exp.</div><div class="l">Decisive structural breaks found (Table 5)</div></div>
   </div>
 
   <div class="cols">
     <div>
       <section>
-        <h2>Background</h2>
+        <h2><span class="n">1</span>Background</h2>
         <p>Public-domain WHO Global Health Observatory (GHO) and World Bank exports are the default empirical basis for national health-indicator forecasting, but these files carry undocumented structural pitfalls that silently corrupt an analysis if uncorrected, and forecasting choices — method, model order, fitting scale — are typically made ad hoc and per-indicator with no shared, reproducible protocol. Existing Ghana-specific forecasting work is disease- or indicator-specific, each selecting its own method and order independently without a protocol another analyst could reuse.</p>
       </section>
       <section>
-        <h2>Methods</h2>
+        <h2><span class="n">2</span>Methods</h2>
         <p>A national indicator panel (21 forecastable series of 25 assembled, from 9 public-domain WHO/World Bank sources, individual series ranging 22–92 years) was built and audited for source-provenance pitfalls. LSTM neural networks were evaluated against classical methods (exponential smoothing, ARIMA) via multi-seed, multi-architecture walk-forward validation on two representative series; each series' ARIMA order was then selected by an AICc grid search rather than applied uniformly, and a structural-break sensitivity test was run for the 2020 COVID-19 and 2022 Ghana currency-crisis candidate breaks.</p>
       </section>
       <section>
-        <h2>Order-selection sensitivity</h2>
+        <h2><span class="n">3</span>Order-selection sensitivity</h2>
         {MARGIN_SVG.replace('width="720" height="460"', 'width="100%" height="380"').replace('viewBox="0 0 720 460"', 'viewBox="0 0 720 460" preserveAspectRatio="xMidYMid meet"')}
         <p class="figcap">AICc difference vs. a uniform ARIMA(1,1,1), all 21 series. Order mismatch was not concentrated among the shortest series — under-five mortality (n=92, the longest series) shows the largest correction.</p>
       </section>
@@ -446,12 +554,12 @@ POSTER_HTML = f"""<!doctype html>
 
     <div>
       <section>
-        <h2>National forecast trends</h2>
+        <h2><span class="n">4</span>National forecast trends</h2>
         {TREND_SVG.replace('width="720" height="230"', 'width="100%" height="230"').replace('viewBox="0 0 720 230"', 'viewBox="0 0 720 230" preserveAspectRatio="xMidYMid meet"')}
         <p class="figcap">Historical trend (solid) and 2030 ARIMA point forecast (dashed) for three headline indicators.</p>
       </section>
       <section>
-        <h2>Key results</h2>
+        <h2><span class="n">5</span>Key results</h2>
         <p><b>Under-five mortality</b> is projected to decline to {u5mr_row['arima_2030']:.1f} per 1,000 live births by 2030 (95% CI {u5mr_row['arima_ci_low']:.1f}–{u5mr_row['arima_ci_high']:.1f}), narrowly missing the SDG 3.2 target of 25.</p>
         <p><b>Malaria incidence</b>: an earlier uniform-order specification produced a {malaria_gap_before_pct:.0f}% ARIMA-vs-ETS disagreement ({_arima_raw_111:.1f} vs. {_ets_raw:.1f}, illustrative pre-correction figures, raw scale); refitting with the series' own AICc-selected order narrowed this to {malaria_gap_after_pct:.0f}% ({malaria_row['arima_2030']:.1f} vs. {malaria_row['ets_2030']:.1f}, final production forecast) — most of that narrower gap was a specification artefact, not a genuine model conflict. A decisive 2022 currency-crisis structural break shifts this series' forecast by a further {sb_malaria['currency_2022_pct_change_2030']:+.1f}%, a larger effect than the order-selection correction (Table 5).</p>
         <p><b>Classical methods beat LSTM</b> on both series tested in walk-forward validation (MAPE 0.18–0.29% for ETS/ARIMA vs. 2.3–14.1% for LSTM); LSTM was excluded from the forecasting roster.</p>
@@ -461,21 +569,27 @@ POSTER_HTML = f"""<!doctype html>
 
     <div>
       <section>
-        <h2>Selected forecasts (full 21-series data underlying manuscript Figure 3)</h2>
+        <h2><span class="n">6</span>Selected forecasts (full 21-series data underlying manuscript Figure 3)</h2>
         <table>
           <thead><tr><th>Indicator</th><th>Last value</th><th>ARIMA 2030</th><th>ETS 2030</th><th>Conf.</th></tr></thead>
           <tbody>{POSTER_TABLE_ROWS}</tbody>
         </table>
       </section>
       <section>
-        <h2>Limitations</h2>
+        <h2><span class="n">7</span>Limitations</h2>
         <p>Ecological analysis throughout; no individual-level data. LSTM-vs-classical validation tested on only 2 of 21 series. {n_low} of 21 series are low-confidence ({low_n_min}–{low_n_max} years). Structural-break tests were run for all testable series, but most had only 2–5 post-break observations — genuinely underpowered for reliably detecting a level shift, so decisive findings (malaria, World Bank life expectancy) should be read as suggestive, not confirmatory. Routine surveillance completeness in Ghana varies sharply by disease domain in facility-level audits, lowest for malaria (~25% in some years) -- bounding the malaria forecast's external validity most acutely. Findings are specific to Ghana.</p>
       </section>
       <section>
-        <h2>Conclusion</h2>
+        <h2><span class="n">8</span>Conclusion</h2>
         <p>The contribution is a reusable, documented workflow and a named set of source-specific pitfalls, not novelty in order selection itself. Researchers reproducing national-indicator forecasts from these sources can adopt the workflow directly; the Ghana-specific forecasts illustrate it and are not offered as planning inputs.</p>
       </section>
     </div>
+  </div>
+  </div>
+
+  <div class="takeaway">
+    <div class="lbl">Takeaway for reproducers</div>
+    <p>The reusable output here is the audit trail and the protocol, not the Ghana-specific numbers: six named WHO/World Bank export pitfalls, an AICc order-search step, and a structural-break check were each enough on their own to change a 2030 forecast by more than the reported margin of error — worth checking before any of these figures reach a policy table.</p>
   </div>
 
   <footer>
@@ -483,8 +597,8 @@ POSTER_HTML = f"""<!doctype html>
     Data: WHO Global Health Observatory / Global Health Estimates; World Bank World Development Indicators (public-domain, aggregate, de-identified — no ethics approval required).
     No competing interests. No funding declared.
     </div>
-    <div class="repo-qr">
-      <div class="label" style="font-weight:700; font-size:0.8rem; color:var(--primary);">Code &amp; data</div>
+    <div class="repo-box">
+      <div class="label">Code &amp; data</div>
       <a href="https://github.com/valentineghanem-bit/disease-burden-forecasting-ghana">github.com/valentineghanem-bit/<br>disease-burden-forecasting-ghana</a>
     </div>
   </footer>

@@ -4,39 +4,64 @@
 <meta charset="utf-8">
 <title>Ghana Burden Forecasting 2030 — Poster</title>
 <style>
-  :root { --primary:#0072b2; --accent:#d55e00; --green:#009e73; --pink:#cc79a7; --border:#dde1e6; --muted:#5a6472; }
+  :root {
+    --primary:#1a5276; --primary2:#3a93cf; --gold:#d4a017; --ink:#16222e; --muted:#5b6b7b;
+    --border:#dde1e6; --card:#f7f8fa;
+  }
   * { box-sizing:border-box; }
-  body { margin:0; font-family: Georgia, 'Times New Roman', serif; background:#fff; color:#1b1f24; }
-  .poster { max-width:1400px; margin:0 auto; padding:28px 36px; }
-  .masthead { border-bottom:4px solid var(--primary); padding-bottom:14px; margin-bottom:20px; }
-  .masthead h1 { margin:0; font-size:2rem; color:var(--primary); }
-  .masthead .authors { font-size:1.05rem; margin-top:6px; }
-  .masthead .affil { font-size:0.9rem; color:var(--muted); margin-top:2px; }
+  body { margin:0; font-family: Georgia, 'Times New Roman', serif; background:#fff; color:var(--ink); }
+  .poster { max-width:1400px; margin:0 auto; }
+  .masthead {
+    background: linear-gradient(135deg, var(--primary), var(--primary2));
+    color:#fff; padding:26px 36px 22px;
+  }
+  .masthead .kicker { font-family:Arial, sans-serif; font-size:0.75rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85; margin-bottom:6px; }
+  .masthead h1 { margin:0; font-size:2rem; line-height:1.25; }
+  .masthead .authors { font-size:1.05rem; margin-top:10px; }
+  .masthead .affil { font-size:0.9rem; opacity:0.9; margin-top:2px; }
+  .masthead .badges { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; font-family:Arial, sans-serif; }
+  .masthead .badges span { background:rgba(255,255,255,0.16); border:1px solid rgba(255,255,255,0.4); border-radius:999px; padding:3px 11px; font-size:0.68rem; font-weight:600; }
+  .hook { background:var(--ink); color:#fff; font-family:Arial, sans-serif; font-size:1.05rem; font-weight:700; padding:12px 36px; line-height:1.4; }
+  .body-wrap { padding:22px 36px 0; }
   .cols { display:grid; grid-template-columns:1fr 1fr 1fr; gap:26px; }
   @media (max-width:1000px) { .cols { grid-template-columns:1fr; } }
   section { margin-bottom:18px; }
-  h2 { font-family: Arial, sans-serif; font-size:1.05rem; color:var(--primary); border-bottom:2px solid var(--border); padding-bottom:4px; margin:0 0 8px; }
+  h2 { font-family: Arial, sans-serif; font-size:1.02rem; color:var(--primary); border-bottom:2px solid var(--border); padding-bottom:5px; margin:0 0 8px; display:flex; align-items:center; gap:8px; }
+  h2 .n {
+    display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
+    border-radius:50%; background:var(--primary); color:#fff; font-size:0.72rem; font-weight:700; flex:none;
+  }
   p { font-size:0.92rem; line-height:1.45; margin:0 0 10px; }
-  .kpi-strip { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
-  .kpi { font-family: Arial, sans-serif; background:#f7f8fa; border:1px solid var(--border); border-radius:8px; padding:10px 14px; flex:1; min-width:150px; }
-  .kpi .v { font-size:1.3rem; font-weight:700; color:var(--primary); }
+  .kpi-strip { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .kpi { font-family: Arial, sans-serif; background:var(--card); border:1px solid var(--border); border-bottom:3px solid var(--kc, var(--primary)); border-radius:8px; padding:10px 14px; flex:1; min-width:150px; }
+  .kpi .v { font-size:1.35rem; font-weight:700; color:var(--primary); }
   .kpi .l { font-size:0.68rem; text-transform:uppercase; color:var(--muted); }
   table { width:100%; border-collapse:collapse; font-family: Arial, sans-serif; font-size:0.78rem; }
   th, td { padding:5px 6px; border-bottom:1px solid var(--border); text-align:left; }
   td:nth-child(2), td:nth-child(3), td:nth-child(4) { text-align:right; font-variant-numeric: tabular-nums; }
-  th { background:#f7f8fa; }
+  th { background:var(--card); }
   .tag { padding:1px 7px; border-radius:8px; font-size:0.68rem; font-weight:600; }
   .tag.std { background:#e3f2ec; color:#009e73; }
   .tag.low { background:#fdecec; color:#b3261e; }
-  footer { font-family: Arial, sans-serif; font-size:0.75rem; color:var(--muted); border-top:1px solid var(--border); margin-top:20px; padding-top:10px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .takeaway {
+    font-family: Arial, sans-serif; background:#fdf6e3; border:1px solid var(--gold); border-left:5px solid var(--gold);
+    border-radius:6px; padding:14px 18px; margin:6px 36px 18px;
+  }
+  .takeaway .lbl { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--gold); margin-bottom:4px; }
+  .takeaway p { margin:0; font-size:0.92rem; }
+  footer {
+    font-family: Arial, sans-serif; font-size:0.75rem; color:#fff;
+    background: linear-gradient(135deg, var(--ink), var(--primary));
+    padding:16px 36px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  footer a { color:#bfe0f5; }
   .figcap { font-family: Arial, sans-serif; font-size:0.72rem; color:var(--muted); margin-top:4px; }
-  .repo-qr { text-align:center; font-family: Arial, sans-serif; }
-  .repo-qr svg { display:block; margin:0 auto 4px; }
-  .repo-qr .label { font-size:0.68rem; color:var(--muted); }
+  .repo-box { font-family: Arial, sans-serif; text-align:center; border:1px solid rgba(255,255,255,0.4); border-radius:8px; padding:8px 14px; }
+  .repo-box .label { font-size:0.68rem; opacity:0.85; margin-bottom:2px; }
   @page { size: A0 portrait; margin: 15mm; }
   @media print {
     body { background:#fff; }
-    .poster { max-width:none; padding:0; }
+    .poster { max-width:none; }
     section { break-inside: avoid; }
     .cols { grid-template-columns:1fr 1fr 1fr !important; }
     a { color:inherit; text-decoration:none; }
@@ -46,31 +71,36 @@
 <body>
 <div class="poster">
   <div class="masthead">
+    <div class="kicker">Reproducible workflow · Methods paper</div>
     <h1>A Reproducible Workflow and Source-Provenance Audit for Forecasting Short National Health-Indicator Panels: A Worked Example from Ghana</h1>
     <div class="authors">Valentine Golden Ghanem</div>
     <div class="affil">Ghana COCOBOD Cocoa Clinic, Accra, Ghana · ORCID 0009-0002-8332-0220</div>
+    <div class="badges"><span>STROBE reporting</span><span>MIT-licensed code</span><span>Public-domain data</span><span>Open repository</span></div>
   </div>
 
+  <div class="hook">Only 1 of 21 national indicators matched a uniform ARIMA(1,1,1) order — order selection is not a formality, and a decisive currency-crisis structural break moved the malaria forecast further than order selection did.</div>
+
+  <div class="body-wrap">
   <div class="kpi-strip">
-    <div class="kpi"><div class="v">6</div><div class="l">Documented source-provenance corrections (Table 1)</div></div>
-    <div class="kpi"><div class="v">29.3 / 1,000</div><div class="l">Under-5 mortality, 2030 (SDG target: 25)</div></div>
-    <div class="kpi"><div class="v">1 of 21</div><div class="l">Series where uniform (1,1,1) matched exactly</div></div>
-    <div class="kpi"><div class="v">11 of 21</div><div class="l">Order-selection near-ties (ΔAICc &lt; 2)</div></div>
-    <div class="kpi"><div class="v">malaria, WB life exp.</div><div class="l">Decisive structural breaks found (Table 5)</div></div>
+    <div class="kpi" style="--kc:#0072b2"><div class="v">6</div><div class="l">Documented source-provenance corrections (Table 1)</div></div>
+    <div class="kpi" style="--kc:#009e73"><div class="v">29.3 / 1,000</div><div class="l">Under-5 mortality, 2030 (SDG target: 25)</div></div>
+    <div class="kpi" style="--kc:#cc79a7"><div class="v">1 of 21</div><div class="l">Series where uniform (1,1,1) matched exactly</div></div>
+    <div class="kpi" style="--kc:#d55e00"><div class="v">11 of 21</div><div class="l">Order-selection near-ties (ΔAICc &lt; 2)</div></div>
+    <div class="kpi" style="--kc:#7d3c98"><div class="v">malaria, WB life exp.</div><div class="l">Decisive structural breaks found (Table 5)</div></div>
   </div>
 
   <div class="cols">
     <div>
       <section>
-        <h2>Background</h2>
+        <h2><span class="n">1</span>Background</h2>
         <p>Public-domain WHO Global Health Observatory (GHO) and World Bank exports are the default empirical basis for national health-indicator forecasting, but these files carry undocumented structural pitfalls that silently corrupt an analysis if uncorrected, and forecasting choices — method, model order, fitting scale — are typically made ad hoc and per-indicator with no shared, reproducible protocol. Existing Ghana-specific forecasting work is disease- or indicator-specific, each selecting its own method and order independently without a protocol another analyst could reuse.</p>
       </section>
       <section>
-        <h2>Methods</h2>
+        <h2><span class="n">2</span>Methods</h2>
         <p>A national indicator panel (21 forecastable series of 25 assembled, from 9 public-domain WHO/World Bank sources, individual series ranging 22–92 years) was built and audited for source-provenance pitfalls. LSTM neural networks were evaluated against classical methods (exponential smoothing, ARIMA) via multi-seed, multi-architecture walk-forward validation on two representative series; each series' ARIMA order was then selected by an AICc grid search rather than applied uniformly, and a structural-break sensitivity test was run for the 2020 COVID-19 and 2022 Ghana currency-crisis candidate breaks.</p>
       </section>
       <section>
-        <h2>Order-selection sensitivity</h2>
+        <h2><span class="n">3</span>Order-selection sensitivity</h2>
         <svg viewBox="0 0 720 460" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif"><rect width="100%" height="380" fill="#ffffff"/><line x1="236.3" y1="10" x2="236.3" y2="435" stroke="#333" stroke-width="1" stroke-dasharray="3,2"/><text x="239.3" y="20" font-size="9" fill="#333">near-tie threshold (2)</text><rect x="210.0" y="13.0" width="11.3" height="14.2" fill="#0072b2"/><text x="204" y="23.1" font-size="9" text-anchor="end" fill="#222">HIV new infections, n</text><rect x="212.7" y="33.3" width="8.6" height="14.2" fill="#0072b2"/><text x="204" y="43.4" font-size="9" text-anchor="end" fill="#222">HIV new infections, per 1,000</text><rect x="221.3" y="53.5" width="1.0" height="14.2" fill="#0072b2"/><text x="204" y="63.6" font-size="9" text-anchor="end" fill="#222">Total NCD deaths, n</text><rect x="221.3" y="73.8" width="1.0" height="14.2" fill="#0072b2"/><text x="204" y="83.8" font-size="9" text-anchor="end" fill="#222">NCD 30-70 death probability, %</text><rect x="221.3" y="94.0" width="3.0" height="14.2" fill="#0072b2"/><text x="204" y="104.1" font-size="9" text-anchor="end" fill="#222">Suicide rate, crude (WHO-GHO)</text><rect x="221.3" y="114.2" width="3.1" height="14.2" fill="#0072b2"/><text x="204" y="124.3" font-size="9" text-anchor="end" fill="#222">Tuberculosis incidence, per 100,000</text><rect x="221.3" y="134.5" width="3.4" height="14.2" fill="#0072b2"/><text x="204" y="144.5" font-size="9" text-anchor="end" fill="#222">Suicide rate (World Bank)</text><rect x="221.3" y="154.7" width="10.1" height="14.2" fill="#0072b2"/><text x="204" y="164.8" font-size="9" text-anchor="end" fill="#222">Healthy life expectancy, yrs</text><rect x="221.3" y="174.9" width="12.6" height="14.2" fill="#0072b2"/><text x="204" y="185.0" font-size="9" text-anchor="end" fill="#222">Life expectancy (WHO-GHO), yrs</text><rect x="221.3" y="195.2" width="13.2" height="14.2" fill="#0072b2"/><text x="204" y="205.3" font-size="9" text-anchor="end" fill="#222">Current health exp. per capita, USD</text><rect x="221.3" y="215.4" width="14.0" height="14.2" fill="#0072b2"/><text x="204" y="225.5" font-size="9" text-anchor="end" fill="#222">Total fertility rate (World Bank)</text><rect x="221.3" y="235.7" width="16.6" height="14.2" fill="#d55e00"/><text x="204" y="245.7" font-size="9" text-anchor="end" fill="#222">Out-of-pocket exp. per capita, USD</text><rect x="221.3" y="255.9" width="17.0" height="14.2" fill="#d55e00"/><text x="204" y="266.0" font-size="9" text-anchor="end" fill="#222">Suicide rate, age-std. (WHO-GHO)</text><rect x="221.3" y="276.1" width="17.3" height="14.2" fill="#d55e00"/><text x="204" y="286.2" font-size="9" text-anchor="end" fill="#222">NCD premature mortality, %</text><rect x="221.3" y="296.4" width="19.9" height="14.2" fill="#d55e00"/><text x="204" y="306.5" font-size="9" text-anchor="end" fill="#222">Current health exp., % GDP (World Bank)</text><rect x="221.3" y="316.6" width="19.9" height="14.2" fill="#d55e00"/><text x="204" y="326.7" font-size="9" text-anchor="end" fill="#222">Current health exp., % GDP (WHO-GHO)</text><rect x="221.3" y="336.8" width="20.4" height="14.2" fill="#d55e00"/><text x="204" y="346.9" font-size="9" text-anchor="end" fill="#222">Malaria incidence, per 1,000 at risk</text><rect x="221.3" y="357.1" width="22.1" height="14.2" fill="#d55e00"/><text x="204" y="367.2" font-size="9" text-anchor="end" fill="#222">Out-of-pocket exp., % of CHE</text><rect x="221.3" y="377.3" width="42.4" height="14.2" fill="#d55e00"/><text x="204" y="387.4" font-size="9" text-anchor="end" fill="#222">Life expectancy (World Bank), yrs</text><rect x="221.3" y="397.6" width="76.4" height="14.2" fill="#d55e00"/><text x="204" y="407.6" font-size="9" text-anchor="end" fill="#222">PM2.5 exposure (World Bank)</text><rect x="221.3" y="417.8" width="458.7" height="14.2" fill="#d55e00"/><text x="204" y="427.9" font-size="9" text-anchor="end" fill="#222">Under-five mortality, per 1,000</text><text x="210" y="454" font-size="10" fill="#444">AICc difference vs. uniform ARIMA(1,1,1)</text><rect x="666" y="18" width="10" height="10" fill="#0072b2"/><text x="662" y="27" font-size="8" text-anchor="end" fill="#222">Near-tie</text><rect x="666" y="32" width="10" height="10" fill="#d55e00"/><text x="662" y="41" font-size="8" text-anchor="end" fill="#222">Decisive</text></svg>
         <p class="figcap">AICc difference vs. a uniform ARIMA(1,1,1), all 21 series. Order mismatch was not concentrated among the shortest series — under-five mortality (n=92, the longest series) shows the largest correction.</p>
       </section>
@@ -78,12 +108,12 @@
 
     <div>
       <section>
-        <h2>National forecast trends</h2>
+        <h2><span class="n">4</span>National forecast trends</h2>
         <svg viewBox="0 0 720 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif"><rect width="100%" height="230" fill="#ffffff"/><text x="10" y="14" font-size="11" font-weight="bold" fill="#222">Under-five mortality (per 1,000 live births)</text><polyline points="10.0,31.9 12.2,34.6 14.5,37.3 16.7,40.2 19.0,42.8 21.2,45.5 23.5,48.0 25.7,50.6 28.0,53.4 30.2,56.2 32.4,58.9 34.7,61.4 36.9,63.9 39.2,66.3 41.4,68.7 43.7,71.0 45.9,73.3 48.2,75.7 50.4,78.1 52.7,80.4 54.9,82.6 57.1,84.8 59.4,86.8 61.6,88.8 63.9,90.6 66.1,92.0 68.4,93.5 70.6,94.7 72.9,95.9 75.1,96.8 77.3,97.5 79.6,98.0 81.8,98.4 84.1,98.5 86.3,98.6 88.6,98.5 90.8,98.4 93.1,98.5 95.3,98.7 97.6,99.2 99.8,100.0 102.0,101.3 104.3,103.0 106.5,105.0 108.8,107.2 111.0,109.2 113.3,110.9 115.5,112.2 117.8,113.0 120.0,113.7 122.2,114.3 124.5,115.1 126.7,116.3 129.0,117.9 131.2,120.0 133.5,122.3 135.7,124.7 138.0,127.0 140.2,129.1 142.4,130.8 144.7,132.1 146.9,133.1 149.2,133.8 151.4,134.4 153.7,135.1 155.9,136.0 158.2,137.2 160.4,138.6 162.7,140.2 164.9,141.9 167.1,143.5 169.4,145.0 171.6,146.3 173.9,147.5 176.1,148.7 178.4,149.9 180.6,151.2 182.9,152.5 185.1,153.9 187.3,155.2 189.6,156.5 191.8,157.6 194.1,158.7 196.3,159.6 198.6,160.5 200.8,161.4 203.1,162.3 205.3,163.1 207.6,163.9 209.8,164.6 212.0,165.3 214.3,165.9" fill="none" stroke="#0072b2" stroke-width="1.6"/><line x1="214.3" y1="165.9" x2="230.0" y2="169.0" stroke="#0072b2" stroke-width="1.6" stroke-dasharray="4,3"/><circle cx="230.0" cy="169.0" r="3" fill="#0072b2"/><text x="226.0" y="161.0" font-size="10" text-anchor="end" fill="#0072b2">29.3</text><line x1="10" y1="170" x2="230" y2="170" stroke="#ccc" stroke-width="1"/><text x="10" y="184" font-size="9" fill="#666">1932</text><text x="230" y="184" font-size="9" text-anchor="end" fill="#666">2030</text><text x="260" y="14" font-size="11" font-weight="bold" fill="#222">Tuberculosis incidence (per 100,000)</text><polyline points="260.0,39.4 267.3,41.6 274.7,43.9 282.0,47.2 289.3,50.6 296.7,54.0 304.0,58.5 311.3,61.8 318.7,67.4 326.0,71.9 333.3,76.4 340.7,82.0 348.0,87.6 355.3,93.2 362.7,96.6 370.0,102.2 377.3,106.7 384.7,111.2 392.0,115.7 399.3,120.2 406.7,124.7 414.0,129.1 421.3,132.5 428.7,137.0 436.0,140.4" fill="none" stroke="#009e73" stroke-width="1.6"/><line x1="436.0" y1="140.4" x2="480.0" y2="160.3" stroke="#009e73" stroke-width="1.6" stroke-dasharray="4,3"/><circle cx="480.0" cy="160.3" r="3" fill="#009e73"/><text x="476.0" y="152.3" font-size="10" text-anchor="end" fill="#009e73">108.2</text><line x1="260" y1="170" x2="480" y2="170" stroke="#ccc" stroke-width="1"/><text x="260" y="184" font-size="9" fill="#666">2000</text><text x="480" y="184" font-size="9" text-anchor="end" fill="#666">2030</text><text x="510" y="14" font-size="11" font-weight="bold" fill="#222">Malaria incidence (per 1,000 at risk)</text><polyline points="510.0,35.8 517.3,44.4 524.7,53.6 532.0,66.9 539.3,79.5 546.7,87.1 554.0,91.8 561.3,93.6 568.7,89.1 576.0,77.0 583.3,65.1 590.7,60.8 598.0,63.8 605.3,74.3 612.7,88.9 620.0,107.8 627.3,123.7 634.7,130.8 642.0,133.7 649.3,132.0 656.7,129.9 664.0,134.2 671.3,136.3 678.7,144.4" fill="none" stroke="#cc79a7" stroke-width="1.6"/><line x1="678.7" y1="144.4" x2="730.0" y2="164.5" stroke="#cc79a7" stroke-width="1.6" stroke-dasharray="4,3"/><circle cx="730.0" cy="164.5" r="3" fill="#cc79a7"/><text x="726.0" y="156.5" font-size="10" text-anchor="end" fill="#cc79a7">149.9</text><line x1="510" y1="170" x2="730" y2="170" stroke="#ccc" stroke-width="1"/><text x="510" y="184" font-size="9" fill="#666">2000</text><text x="730" y="184" font-size="9" text-anchor="end" fill="#666">2030</text></svg>
         <p class="figcap">Historical trend (solid) and 2030 ARIMA point forecast (dashed) for three headline indicators.</p>
       </section>
       <section>
-        <h2>Key results</h2>
+        <h2><span class="n">5</span>Key results</h2>
         <p><b>Under-five mortality</b> is projected to decline to 29.3 per 1,000 live births by 2030 (95% CI 26.3–32.7), narrowly missing the SDG 3.2 target of 25.</p>
         <p><b>Malaria incidence</b>: an earlier uniform-order specification produced a 24% ARIMA-vs-ETS disagreement (94.6 vs. 125.0, illustrative pre-correction figures, raw scale); refitting with the series' own AICc-selected order narrowed this to 9% (149.9 vs. 137.4, final production forecast) — most of that narrower gap was a specification artefact, not a genuine model conflict. A decisive 2022 currency-crisis structural break shifts this series' forecast by a further +26.5%, a larger effect than the order-selection correction (Table 5).</p>
         <p><b>Classical methods beat LSTM</b> on both series tested in walk-forward validation (MAPE 0.18–0.29% for ETS/ARIMA vs. 2.3–14.1% for LSTM); LSTM was excluded from the forecasting roster.</p>
@@ -93,21 +123,27 @@
 
     <div>
       <section>
-        <h2>Selected forecasts (full 21-series data underlying manuscript Figure 3)</h2>
+        <h2><span class="n">6</span>Selected forecasts (full 21-series data underlying manuscript Figure 3)</h2>
         <table>
           <thead><tr><th>Indicator</th><th>Last value</th><th>ARIMA 2030</th><th>ETS 2030</th><th>Conf.</th></tr></thead>
           <tbody><tr><td>Under-five mortality, per 1,000</td><td>37.1</td><td>29.3</td><td>28.3</td><td><span class="tag std">Standard</span></td></tr><tr><td>Tuberculosis incidence, per 100,000</td><td>126.0</td><td>108.2</td><td>108.1</td><td><span class="tag std">Standard</span></td></tr><tr><td>Malaria incidence, per 1,000 at risk</td><td>193.9</td><td>149.9</td><td>137.4</td><td><span class="tag low">Low</span></td></tr><tr><td>HIV new infections, per 1,000</td><td>0.5</td><td>0.3</td><td>0.4</td><td><span class="tag std">Standard</span></td></tr><tr><td>Life expectancy (WHO-GHO), yrs</td><td>66.1</td><td>64.8</td><td>65.5</td><td><span class="tag low">Low</span></td></tr><tr><td>Life expectancy (World Bank), yrs</td><td>65.5</td><td>67.6</td><td>67.8</td><td><span class="tag std">Standard</span></td></tr><tr><td>Total fertility rate (World Bank)</td><td>3.4</td><td>3.2</td><td>3.2</td><td><span class="tag std">Standard</span></td></tr><tr><td>Out-of-pocket exp., % of CHE</td><td>25.0</td><td>32.8</td><td>23.5</td><td><span class="tag low">Low</span></td></tr></tbody>
         </table>
       </section>
       <section>
-        <h2>Limitations</h2>
+        <h2><span class="n">7</span>Limitations</h2>
         <p>Ecological analysis throughout; no individual-level data. LSTM-vs-classical validation tested on only 2 of 21 series. 14 of 21 series are low-confidence (22–24 years). Structural-break tests were run for all testable series, but most had only 2–5 post-break observations — genuinely underpowered for reliably detecting a level shift, so decisive findings (malaria, World Bank life expectancy) should be read as suggestive, not confirmatory. Routine surveillance completeness in Ghana varies sharply by disease domain in facility-level audits, lowest for malaria (~25% in some years) -- bounding the malaria forecast's external validity most acutely. Findings are specific to Ghana.</p>
       </section>
       <section>
-        <h2>Conclusion</h2>
+        <h2><span class="n">8</span>Conclusion</h2>
         <p>The contribution is a reusable, documented workflow and a named set of source-specific pitfalls, not novelty in order selection itself. Researchers reproducing national-indicator forecasts from these sources can adopt the workflow directly; the Ghana-specific forecasts illustrate it and are not offered as planning inputs.</p>
       </section>
     </div>
+  </div>
+  </div>
+
+  <div class="takeaway">
+    <div class="lbl">Takeaway for reproducers</div>
+    <p>The reusable output here is the audit trail and the protocol, not the Ghana-specific numbers: six named WHO/World Bank export pitfalls, an AICc order-search step, and a structural-break check were each enough on their own to change a 2030 forecast by more than the reported margin of error — worth checking before any of these figures reach a policy table.</p>
   </div>
 
   <footer>
@@ -115,8 +151,8 @@
     Data: WHO Global Health Observatory / Global Health Estimates; World Bank World Development Indicators (public-domain, aggregate, de-identified — no ethics approval required).
     No competing interests. No funding declared.
     </div>
-    <div class="repo-qr">
-      <div class="label" style="font-weight:700; font-size:0.8rem; color:var(--primary);">Code &amp; data</div>
+    <div class="repo-box">
+      <div class="label">Code &amp; data</div>
       <a href="https://github.com/valentineghanem-bit/disease-burden-forecasting-ghana">github.com/valentineghanem-bit/<br>disease-burden-forecasting-ghana</a>
     </div>
   </footer>
