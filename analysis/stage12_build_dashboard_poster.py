@@ -34,27 +34,48 @@ already used in the manuscript figures -- only chrome (headers, cards, footers, 
 uses the sibling projects' ink/primary/gold tokens, so the two colour systems never fight
 over the same visual channel.
 
-2026-07-12 update: user judged the dashboard's storytelling and chart variety poor (poster
-judged "perfect" and left untouched). Five findings previously reported only in the
-manuscript's prose/tables/KPI cards had NO chart at all: the walk-forward method comparison
-(Table 3), the order-selection effect on the 2030 forecast (Figure 3), the full structural-
-break sensitivity result (Table 5, 21 series x 2 candidate breaks), the malaria specification
--attribution finding (the 2026-07-11 council fix), and the data-length eligibility/confidence
--tier framework (Table 2). Added five new inline-SVG chart functions (pctchange_svg,
-breakheat_svg, walkforward_svg, malaria_waterfall_svg, datalength_svg) so the dashboard now
-carries the manuscript's full analytical arc end to end -- pitfalls -> trends -> method choice
--> order sensitivity (both "how different" and "how much it matters") -> structural breaks
--> the corrected malaria deep-dive -> data-length reliability -- rather than stopping after
-the first two figures. Dashboard grew from 25.0 KB to ~54 KB (still under the 60 KB ceiling);
-poster untouched (still ~30 KB). All new charts read their data from the same CSVs already
-used elsewhere in this script (or newly loaded alongside them, see the top-of-file reads),
-so nothing here is a duplicate, hand-typed, or hardcoded copy of a number reported anywhere
-else -- the same drift-proofing discipline already applied to every other figure in this file.
+2026-07-12 update #1: user judged the dashboard's storytelling and chart variety poor
+(poster judged "perfect" and left untouched). Five findings previously reported only in
+the manuscript's prose/tables/KPI cards had NO chart at all: the walk-forward method
+comparison (Table 3), the order-selection effect on the 2030 forecast (Figure 3), the full
+structural-break sensitivity result (Table 5, 21 series x 2 candidate breaks), the malaria
+specification-attribution finding (the 2026-07-11 council fix), and the data-length
+eligibility/confidence-tier framework (Table 2). Added five new inline-SVG chart functions
+so the dashboard carries the manuscript's full analytical arc end to end.
+
+2026-07-12 update #2 (full council/QA pass): fixed 8 findings -- a WCAG contrast failure
+in the structural-break heatmap, a chart caption asserting a pattern the data contradicted,
+zero test coverage of the new charts, an under-surfaced log-scale warning, an imprecise
+LSTM error-bar rescaling factor, a truncated dashboard/README title, an ORCID never
+rendered in the LaTeX frontmatter, and a CI Python-version mismatch. See
+AIPOCH_Learning_Log.md for the full council synthesis.
+
+2026-07-12 update #3 (this pass): user judged the static SVG charts insufficiently
+interactive -- "drop static figures, create and implement interactive charts from
+scratch." The DASHBOARD's charts (poster stays static/print-oriented and untouched, same
+as before) are rebuilt so the SVG is rendered client-side by hand-written vanilla
+JavaScript from an embedded JSON data payload, not baked into the HTML at Python build
+time. This enables real interactivity within the project's own <60 KB/no-external-JS
+spec: hover tooltips with the exact value on every bar/cell/point; cross-chart
+highlighting keyed by a shared `data-ind` indicator identity, so hovering "malaria" in
+ANY chart highlights malaria's bars/cells/points in every OTHER chart plus its row in the
+full data table; the existing indicator-filter search box now also highlights matches
+across every chart, not just the table; and click-to-toggle sort order (by value / by
+name) on the three sortable bar charts. `trend_svg()`/`margin_svg()` (the two original
+chart functions) are KEPT AS-IS and still used verbatim by the poster, which has no
+JavaScript and must stay a static, printable A0 document -- only the dashboard's chart
+rendering moved from server-baked SVG strings to client-rendered interactive SVG. The
+five newer chart functions (pctchange_svg, breakheat_svg, walkforward_svg,
+malaria_waterfall_svg, datalength_svg) are removed outright (not deprecated, not kept
+unused) since the dashboard no longer calls them and the poster never did; their exact
+layout/colour logic was ported into the JS renderers below so nothing about how the
+charts look was lost, only how they're built.
 """
 import pandas as pd
 import numpy as np
 import datetime
 import io
+import json
 import re
 import qrcode
 import qrcode.image.svg
@@ -148,7 +169,10 @@ def qr_svg(data, fill=INK):
 
 QR_SVG = qr_svg(REPO_URL)
 
-# ---------- SVG chart 1: national trend, 3 small multiples (U5MR, TB, Malaria) ----------
+# ---------- SVG chart: national trend, 3 small multiples (U5MR, TB, Malaria) -- kept exactly
+# as before; still used verbatim by the poster (static, print-only, no JavaScript). The
+# dashboard no longer embeds this string directly -- see build_chart_data()["trend"] for the
+# equivalent data consumed by the client-side interactive renderer instead. ----------
 def trend_svg():
     series_defs = [
         ("u5mr_who", "Under-five mortality (per 1,000 live births)", BLUE, 0, 0),
@@ -188,7 +212,8 @@ def trend_svg():
     svg_parts.append("</svg>")
     return "".join(svg_parts)
 
-# ---------- SVG chart 2: AICc margin, all 21 series, sorted, horizontal bars ----------
+# ---------- SVG chart: AICc margin, all 21 series, sorted, horizontal bars -- kept exactly
+# as before; still used verbatim by the poster. See note on trend_svg() above. ----------
 def margin_svg():
     W, H = 720, 460
     left_pad, right_pad, top_pad, bot_pad = 210, 40, 10, 25
@@ -222,232 +247,8 @@ def margin_svg():
     svg.append("</svg>")
     return "".join(svg)
 
-# ---------- SVG chart 3: order-selection effect on the 2030 forecast, all 21 series
-# (dashboard-only -- Figure 3 equivalent; pairs with margin_svg's Figure 2 equivalent so the
-# dashboard tells both halves of the order-selection story: "how different are the models"
-# and "how much does it actually change the forecast"). ----------
-def pctchange_svg():
-    # Colour by this chart's OWN magnitude (>=2%, matching results_body.tex's own
-    # "negligible (<2%) for most series but substantial for a minority" language), not by
-    # the AICc near_tie flag from the margin chart. Confirmed (2026-07-12 council review):
-    # AICc near-tie/decisive status and forecast-magnitude impact are only loosely coupled
-    # -- several near-tie series (e.g. HIV per 1,000, ~12%) move the forecast substantially,
-    # and several AICc-decisive series (e.g. WB life expectancy, ~0.02%) barely move it at
-    # all. Borrowing near_tie here would colour bars in a way the data actively contradicts.
-    d = order_comp.copy()
-    d["abschg"] = d["pct_change"].abs()
-    d = d.sort_values("abschg")
-    W, H = 720, 460
-    left_pad, right_pad, top_pad, bot_pad = 210, 40, 10, 25
-    pw = W - left_pad - right_pad
-    ph = H - top_pad - bot_pad
-    n = len(d)
-    bar_h = ph / n * 0.7
-    gap_h = ph / n
-    thresh = 2.0
-    maxv = d["abschg"].max() * 1.05
-    def px(v): return left_pad + (v / maxv) * pw
-    svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
-    svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
-    thresh_x = px(thresh)
-    svg.append(f'<line x1="{thresh_x:.1f}" y1="{top_pad}" x2="{thresh_x:.1f}" y2="{top_pad+ph}" stroke="#333" stroke-width="1" stroke-dasharray="3,2"/>')
-    svg.append(f'<text x="{thresh_x+3:.1f}" y="{top_pad+10}" font-size="9" fill="#333">2% threshold</text>')
-    for i, (_, r) in enumerate(d.iterrows()):
-        y = top_pad + i * gap_h + (gap_h - bar_h) / 2
-        color = ORANGE if r["abschg"] >= thresh else BLUE
-        w = px(r["abschg"]) - left_pad
-        svg.append(f'<rect x="{left_pad:.1f}" y="{y:.1f}" width="{max(w,1):.1f}" height="{bar_h:.1f}" fill="{color}"/>')
-        label = LABELS[r["indicator"]]
-        svg.append(f'<text x="{left_pad-6}" y="{y+bar_h/2+3:.1f}" font-size="9" text-anchor="end" fill="#222">{esc(label)}</text>')
-        svg.append(f'<text x="{px(r["abschg"])+4:.1f}" y="{y+bar_h/2+3:.1f}" font-size="8.5" fill="#444">{r["pct_change"]:.1f}%</text>')
-    legend_y = top_pad + 8
-    svg.append(f'<rect x="{W-right_pad-14}" y="{legend_y}" width="10" height="10" fill="{ORANGE}"/>')
-    svg.append(f'<text x="{W-right_pad-18}" y="{legend_y+9}" font-size="8" text-anchor="end" fill="#222">&#8805;2% impact</text>')
-    svg.append(f'<rect x="{W-right_pad-14}" y="{legend_y+14}" width="10" height="10" fill="{BLUE}"/>')
-    svg.append(f'<text x="{W-right_pad-18}" y="{legend_y+23}" font-size="8" text-anchor="end" fill="#222">&lt;2% impact</text>')
-    svg.append(f'<text x="{left_pad}" y="{H-6}" font-size="10" fill="#444">|% change| in 2030 point forecast, own AICc-selected order vs. uniform ARIMA(1,1,1)</text>')
-    svg.append("</svg>")
-    return "".join(svg)
-
-# ---------- SVG chart 4: structural-break sensitivity heatmap, all 21 series x 2 candidate
-# breaks (Table 5 equivalent -- this finding previously had no chart at all, text only). ----------
-def breakheat_svg():
-    order = list(LABELS.keys())
-    W, H = 720, 460
-    left_pad, right_pad, top_pad, bot_pad = 210, 20, 34, 10
-    cell_w = (W - left_pad - right_pad) / 2
-    ph = H - top_pad - bot_pad
-    row_h = ph / len(order)
-    cap = 15.0  # colour-scale saturation cap; the true value is still printed as text
-    def cellrgb(v):
-        if v is None or (isinstance(v, float) and np.isnan(v)):
-            return (0xe2, 0xe5, 0xe9)
-        t = min(abs(v), cap) / cap
-        if v >= 0:
-            r0, g0, b0 = 0xff, 0xe8, 0xd8
-            r1, g1, b1 = 0xd5, 0x5e, 0x00
-        else:
-            r0, g0, b0 = 0xe1, 0xf0, 0xfa
-            r1, g1, b1 = 0x00, 0x72, 0xb2
-        return (int(r0 + (r1 - r0) * t), int(g0 + (g1 - g0) * t), int(b0 + (b1 - b0) * t))
-    def cellcolor(v):
-        r, g, b = cellrgb(v)
-        return f"rgb({r},{g},{b})"
-    svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
-    svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
-    svg.append(f'<text x="{left_pad}" y="16" font-size="9.5" font-weight="bold" text-anchor="middle" fill="#222">COVID-2020 break</text>')
-    svg.append(f'<text x="{left_pad+cell_w}" y="16" font-size="9.5" font-weight="bold" text-anchor="middle" fill="#222">Currency-2022 break</text>')
-    for i, ind in enumerate(order):
-        row = sb[sb["indicator"] == ind].iloc[0]
-        y = top_pad + i * row_h
-        svg.append(f'<text x="{left_pad-6}" y="{y+row_h/2+3:.1f}" font-size="9" text-anchor="end" fill="#222">{esc(LABELS[ind])}</text>')
-        for j, prefix in enumerate(["covid_2020", "currency_2022"]):
-            testable = str(row[f"{prefix}_testable"]).strip().lower() == "true"
-            val = float(row[f"{prefix}_delta_aicc"]) if testable else None
-            x = left_pad + j * cell_w
-            svg.append(f'<rect x="{x+1:.1f}" y="{y+1:.1f}" width="{cell_w-2:.1f}" height="{row_h-2:.1f}" fill="{cellcolor(val)}" stroke="#fff" stroke-width="1"/>')
-            if val is None:
-                svg.append(f'<text x="{x+cell_w/2:.1f}" y="{y+row_h/2+3:.1f}" font-size="8" text-anchor="middle" fill="#999">NT</text>')
-            else:
-                decisive = val > 2
-                label = f'{val:+.1f}{"*" if decisive else ""}'
-                # White stroke halo behind the text (paint-order) guarantees legibility on
-                # every cell colour, including the fully-saturated end of the scale -- the
-                # +36.4 WB-life-expectancy cell measured ~3.9:1 for either black or white
-                # fill alone before this fix (neither passes 4.5:1 against a mid-tone
-                # saturated orange), so a fixed fill colour cannot solve this; a halo can.
-                svg.append(f'<text x="{x+cell_w/2:.1f}" y="{y+row_h/2+3:.1f}" font-size="8" text-anchor="middle" font-weight="{"bold" if decisive else "normal"}" fill="#1b2733" stroke="#ffffff" stroke-width="2.5" paint-order="stroke fill" stroke-linejoin="round">{label}</text>')
-    svg.append("</svg>")
-    return "".join(svg)
-
-# ---------- SVG chart 5: walk-forward MAPE, classical vs LSTM, both validated series
-# (Table 3 equivalent -- this finding previously had no chart, only a KPI card + prose). ----------
-def walkforward_svg():
-    W, H = 720, 300
-    left_pad, right_pad, top_pad, bot_pad = 50, 20, 16, 50
-    pw = W - left_pad - right_pad
-    ph = H - top_pad - bot_pad
-    ymin, ymax = 0.1, 20.0
-    def py(v):
-        v = max(v, ymin)
-        return top_pad + ph * (1 - (np.log10(v) - np.log10(ymin)) / (np.log10(ymax) - np.log10(ymin)))
-    methods = [("ETS", "ets_mape", None, GREEN), ("ARIMA", "arima_mape", None, BLUE),
-               ("LSTM (h=8)", "lstm_h8_mape", "lstm_h8_seed_sd", ORANGE), ("LSTM (h=32)", "lstm_h32_mape", "lstm_h32_seed_sd", PINK)]
-    series_list = [("u5mr_who", "Under-five mortality (n=92, 10 folds)"), ("tb_incidence_per100k", "Tuberculosis incidence (n=25, 6 folds)")]
-    group_w = pw / 2
-    bar_w = group_w / (len(methods) + 1.5)
-    svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
-    svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
-    for gy in [0.1, 1, 10]:
-        yy = py(gy)
-        svg.append(f'<line x1="{left_pad}" y1="{yy:.1f}" x2="{W-right_pad}" y2="{yy:.1f}" stroke="#eee" stroke-width="1"/>')
-        svg.append(f'<text x="{left_pad-6}" y="{yy+3:.1f}" font-size="8" text-anchor="end" fill="#666">{gy:g}%</text>')
-    for gi, (ind, glabel) in enumerate(series_list):
-        row = wf[wf["indicator"] == ind].iloc[0]
-        gx0 = left_pad + gi * group_w
-        for mi, (mlabel, col, sdcol, color) in enumerate(methods):
-            v = row[col]
-            x = gx0 + 0.6 * bar_w + mi * bar_w
-            y = py(v)
-            svg.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w*0.8:.1f}" height="{max(py(ymin)-y,1):.1f}" fill="{color}"/>')
-            if sdcol:
-                # Each method's OWN mape/mae ratio, not a borrowed one (2026-07-12 council
-                # fix): this series' ARIMA and LSTM ratios differ by ~4% for tuberculosis,
-                # small at this chart's scale but methodologically the wrong divisor.
-                own_factor = row[col] / row[col.replace("_mape", "_mae")]
-                sd_pct = row[sdcol] * own_factor
-                y_hi, y_lo = py(v + sd_pct), py(max(v - sd_pct, ymin))
-                cx = x + bar_w * 0.4
-                svg.append(f'<line x1="{cx:.1f}" y1="{y_hi:.1f}" x2="{cx:.1f}" y2="{y_lo:.1f}" stroke="#333" stroke-width="1.2"/>')
-                svg.append(f'<line x1="{cx-3:.1f}" y1="{y_hi:.1f}" x2="{cx+3:.1f}" y2="{y_hi:.1f}" stroke="#333" stroke-width="1.2"/>')
-                svg.append(f'<line x1="{cx-3:.1f}" y1="{y_lo:.1f}" x2="{cx+3:.1f}" y2="{y_lo:.1f}" stroke="#333" stroke-width="1.2"/>')
-            svg.append(f'<text x="{x+bar_w*0.4:.1f}" y="{y-4:.1f}" font-size="7.5" text-anchor="middle" fill="#222">{v:.2f}</text>')
-        svg.append(f'<text x="{gx0+group_w/2:.1f}" y="{H-30:.1f}" font-size="9" font-weight="bold" text-anchor="middle" fill="#222">{esc(glabel)}</text>')
-    legend_x = left_pad
-    legend_y = H - 14
-    for mi, (mlabel, col, sdcol, color) in enumerate(methods):
-        lx = legend_x + mi * 165
-        svg.append(f'<rect x="{lx:.1f}" y="{legend_y-8:.1f}" width="9" height="9" fill="{color}"/>')
-        svg.append(f'<text x="{lx+13:.1f}" y="{legend_y:.1f}" font-size="8.5" fill="#222">{mlabel}</text>')
-    svg.append(f'<text x="{left_pad}" y="12" font-size="9" fill="#444">MAPE, %, log scale (bars: seed-averaged; error bars: SD across 5 LSTM seeds)</text>')
-    svg.append("</svg>")
-    return "".join(svg)
-
-# ---------- SVG chart 6: malaria specification waterfall -- naive raw-scale to log-scale
-# fixed-order to log-scale own-order, illustrating the corrected causal attribution
-# (2026-07-11 council fix: scale, not order, does almost all of the work). ----------
-def malaria_waterfall_svg():
-    stages = [
-        ("Naive: raw scale,\nuniform (1,1,1)", malaria_gap_naive_pct, ORANGE),
-        ("This paper's protocol:\nlog scale, uniform (1,1,1)", malaria_gap_logscale_fixed_pct, BLUE),
-        ("Final: log scale,\nAICc-selected order", malaria_gap_final_pct, GREEN),
-    ]
-    W, H = 720, 200
-    left_pad, right_pad, top_pad, bot_pad = 40, 20, 16, 46
-    pw = W - left_pad - right_pad
-    ph = H - top_pad - bot_pad
-    maxv = max(v for _, v, _ in stages) * 1.15
-    bw = pw / len(stages) * 0.5
-    gap = pw / len(stages)
-    def py(v): return top_pad + ph * (1 - v / maxv)
-    svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
-    svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
-    svg.append(f'<line x1="{left_pad}" y1="{top_pad+ph}" x2="{W-right_pad}" y2="{top_pad+ph}" stroke="#ccc" stroke-width="1"/>')
-    for i, (label, v, color) in enumerate(stages):
-        cx = left_pad + gap * i + gap / 2
-        x = cx - bw / 2
-        y = py(v)
-        svg.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{top_pad+ph-y:.1f}" fill="{color}"/>')
-        svg.append(f'<text x="{cx:.1f}" y="{y-8:.1f}" font-size="13" font-weight="bold" text-anchor="middle" fill="#222">{v:.1f}%</text>')
-        for li, line in enumerate(label.split("\n")):
-            svg.append(f'<text x="{cx:.1f}" y="{top_pad+ph+16+li*11:.1f}" font-size="8.5" text-anchor="middle" fill="#444">{esc(line)}</text>')
-    svg.append(f'<text x="{left_pad}" y="12" font-size="9" fill="#444">Malaria: ARIMA-vs-exponential-smoothing forecast gap by specification stage</text>')
-    svg.append("</svg>")
-    return "".join(svg)
-
-# ---------- SVG chart 7: data-length eligibility and confidence tiers, all 21 series
-# (Table 2 equivalent -- shows WHY roughly two-thirds of the panel is flagged low-confidence). ----------
-def datalength_svg():
-    d = fc[["indicator", "n_obs", "confidence"]].copy()
-    d["is_std"] = d["confidence"].str.strip().str.lower() == "standard"
-    d = d.sort_values("n_obs")
-    W, H = 720, 300
-    left_pad, right_pad, top_pad, bot_pad = 210, 40, 10, 22
-    pw = W - left_pad - right_pad
-    ph = H - top_pad - bot_pad
-    n = len(d)
-    bar_h = ph / n * 0.7
-    gap_h = ph / n
-    maxv = d["n_obs"].max() * 1.08
-    def px(v): return left_pad + (v / maxv) * pw
-    svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
-    svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
-    for thresh, lbl in [(15, "15y min"), (25, "25y standard")]:
-        tx = px(thresh)
-        svg.append(f'<line x1="{tx:.1f}" y1="{top_pad}" x2="{tx:.1f}" y2="{top_pad+ph}" stroke="#999" stroke-width="1" stroke-dasharray="3,2"/>')
-        svg.append(f'<text x="{tx+3:.1f}" y="{top_pad+9}" font-size="7.5" fill="#666">{lbl}</text>')
-    for i, (_, r) in enumerate(d.iterrows()):
-        y = top_pad + i * gap_h + (gap_h - bar_h) / 2
-        color = GREEN if r["is_std"] else ORANGE
-        w = px(r["n_obs"]) - left_pad
-        svg.append(f'<rect x="{left_pad:.1f}" y="{y:.1f}" width="{max(w,1):.1f}" height="{bar_h:.1f}" fill="{color}"/>')
-        label = LABELS[r["indicator"]]
-        svg.append(f'<text x="{left_pad-6}" y="{y+bar_h/2+3:.1f}" font-size="8.5" text-anchor="end" fill="#222">{esc(label)}</text>')
-        svg.append(f'<text x="{px(r["n_obs"])+4:.1f}" y="{y+bar_h/2+3:.1f}" font-size="8" fill="#444">{int(r["n_obs"])}y</text>')
-    legend_y = top_pad + 8
-    svg.append(f'<rect x="{W-right_pad-14}" y="{legend_y}" width="10" height="10" fill="{GREEN}"/>')
-    svg.append(f'<text x="{W-right_pad-18}" y="{legend_y+9}" font-size="8" text-anchor="end" fill="#222">Standard</text>')
-    svg.append(f'<rect x="{W-right_pad-14}" y="{legend_y+14}" width="10" height="10" fill="{ORANGE}"/>')
-    svg.append(f'<text x="{W-right_pad-18}" y="{legend_y+23}" font-size="8" text-anchor="end" fill="#222">Low</text>')
-    svg.append("</svg>")
-    return "".join(svg)
-
 TREND_SVG = trend_svg()
 MARGIN_SVG = margin_svg()
-PCTCHANGE_SVG = pctchange_svg()
-BREAKHEAT_SVG = breakheat_svg()
-WALKFORWARD_SVG = walkforward_svg()
-DATALENGTH_SVG = datalength_svg()
 
 # ---------- shared table HTML (Table 1 content) ----------
 def table_rows_html():
@@ -459,7 +260,7 @@ def table_rows_html():
         def f(v):
             return f"{v:,.0f}" if is_count else f"{v:,.2f}"
         rows.append(
-            f'<tr><td>{esc(LABELS[ind])}</td><td>{int(d["n_obs"])}</td><td>{int(d["last_year"])}</td>'
+            f'<tr data-ind="{ind}"><td>{esc(LABELS[ind])}</td><td>{int(d["n_obs"])}</td><td>{int(d["last_year"])}</td>'
             f'<td>{esc(d["arima_order"])}</td><td>{f(d["last_value"])}</td><td>{f(d["arima_2030"])}</td>'
             f'<td>{f(d["arima_ci_low"])}–{f(d["arima_ci_high"])}</td><td>{f(d["ets_2030"])}</td>'
             f'<td><span class="conftag {"std" if conf=="Standard" else "low"}">{conf}</span></td></tr>'
@@ -467,7 +268,6 @@ def table_rows_html():
     return "".join(rows)
 
 TABLE_ROWS = table_rows_html()
-print(f"TREND_SVG size: {len(TREND_SVG)/1024:.1f} KB | MARGIN_SVG size: {len(MARGIN_SVG)/1024:.1f} KB | TABLE_ROWS size: {len(TABLE_ROWS)/1024:.1f} KB | QR_SVG size: {len(QR_SVG)/1024:.1f} KB")
 
 n_standard = (fc["confidence"].str.strip().str.lower() == "standard").sum()
 n_low = len(fc) - n_standard
@@ -481,9 +281,6 @@ sens = pd.read_csv(ROOT + r"\outputs\data\arima_order_sensitivity.csv")
 n_matched_111 = (sens["matches_111"].astype(str).str.strip().str.lower() == "true").sum()
 n_near_tie = (margin["near_tie"].astype(str).str.strip().str.lower() == "true").sum()
 
-# Structural-break sensitivity (Table 5) -- loaded near the top with the other source CSVs
-# (see `sb = pd.read_csv(...)` above) so the dashboard/poster can never silently drift from
-# the manuscript's own verified structural-break numbers.
 sb_malaria = sb[sb["indicator"] == "malaria_incidence_per1000atrisk"].iloc[0]
 sb_lifeexp_wb = sb[sb["indicator"] == "life_expectancy_birth_yrs_wb"].iloc[0]
 n_covid_testable = (sb["covid_2020_testable"].astype(str).str.strip().str.lower() == "true").sum()
@@ -513,8 +310,104 @@ _malaria_fixed_111_logscale = order_comp.loc[order_comp["indicator"] == "malaria
 malaria_gap_logscale_fixed_pct = abs(_malaria_fixed_111_logscale - malaria_row["ets_2030"]) / malaria_row["ets_2030"] * 100
 malaria_gap_final_pct = abs(malaria_row["arima_2030"] - malaria_row["ets_2030"]) / malaria_row["ets_2030"] * 100
 
-MALARIA_WATERFALL_SVG = malaria_waterfall_svg()
-print(f"PCTCHANGE_SVG size: {len(PCTCHANGE_SVG)/1024:.1f} KB | BREAKHEAT_SVG size: {len(BREAKHEAT_SVG)/1024:.1f} KB | WALKFORWARD_SVG size: {len(WALKFORWARD_SVG)/1024:.1f} KB | MALARIA_WATERFALL_SVG size: {len(MALARIA_WATERFALL_SVG)/1024:.1f} KB | DATALENGTH_SVG size: {len(DATALENGTH_SVG)/1024:.1f} KB")
+# ============================================================
+# INTERACTIVE CHART DATA -- everything the dashboard's client-side JS renderers need,
+# extracted from the same verified DataFrames as every other number in this file (never a
+# duplicated/hand-typed copy). Poster does NOT use this -- it stays static and keeps using
+# TREND_SVG/MARGIN_SVG (server-baked strings) directly, since it has no JavaScript.
+# ============================================================
+def build_chart_data():
+    data = {}
+
+    trend = []
+    for col, title, color in [
+        ("u5mr_who", "Under-five mortality (per 1,000 live births)", BLUE),
+        ("tb_incidence_per100k", "Tuberculosis incidence (per 100,000)", GREEN),
+        ("malaria_incidence_per1000atrisk", "Malaria incidence (per 1,000 at risk)", PINK),
+    ]:
+        s = panel[["year", col]].dropna().sort_values("year")
+        row = fc[fc["indicator"] == col].iloc[0]
+        trend.append({
+            "ind": col, "label": title, "color": color,
+            "years": [int(y) for y in s["year"].tolist()],
+            "values": [round(float(v), 3) for v in s[col].tolist()],
+            "fc2030": round(float(row["arima_2030"]), 2),
+        })
+    data["trend"] = trend
+
+    m = margin.sort_values("delta_aicc")
+    data["margin"] = [
+        {"ind": r["indicator"], "label": LABELS[r["indicator"]],
+         "delta": round(float(r["delta_aicc"]), 2), "nearTie": bool(r["near_tie"])}
+        for _, r in m.iterrows()
+    ]
+
+    oc = order_comp.copy()
+    oc["abschg"] = oc["pct_change"].abs()
+    oc = oc.sort_values("abschg")
+    data["pctchange"] = [
+        {"ind": r["indicator"], "label": LABELS[r["indicator"]],
+         "pct": round(float(r["pct_change"]), 2), "abschg": round(float(r["abschg"]), 2)}
+        for _, r in oc.iterrows()
+    ]
+
+    bh = []
+    for ind in ROW_ORDER:
+        row = sb[sb["indicator"] == ind].iloc[0]
+        cell = {"ind": ind, "label": LABELS[ind]}
+        for prefix, key in [("covid_2020", "covid"), ("currency_2022", "currency")]:
+            testable = str(row[f"{prefix}_testable"]).strip().lower() == "true"
+            val = round(float(row[f"{prefix}_delta_aicc"]), 2) if testable else None
+            npost = int(row[f"{prefix}_n_post"])
+            cell[key] = {"testable": testable, "delta": val, "nPost": npost}
+        bh.append(cell)
+    data["breakheat"] = bh
+
+    wf_data = []
+    for ind, glabel, sub in [
+        ("u5mr_who", "Under-five mortality", "n=92, 10 folds"),
+        ("tb_incidence_per100k", "Tuberculosis incidence", "n=25, 6 folds"),
+    ]:
+        row = wf[wf["indicator"] == ind].iloc[0]
+        methods = []
+        for mlabel, col, sdcol, color in [
+            ("ETS", "ets_mape", None, GREEN), ("ARIMA", "arima_mape", None, BLUE),
+            ("LSTM (h=8)", "lstm_h8_mape", "lstm_h8_seed_sd", ORANGE),
+            ("LSTM (h=32)", "lstm_h32_mape", "lstm_h32_seed_sd", PINK),
+        ]:
+            v = round(float(row[col]), 2)
+            sd = None
+            if sdcol:
+                own_factor = row[col] / row[col.replace("_mape", "_mae")]
+                sd = round(float(row[sdcol] * own_factor), 2)
+            methods.append({"label": mlabel, "v": v, "sd": sd, "color": color})
+        wf_data.append({"ind": ind, "label": glabel, "sub": sub, "methods": methods})
+    data["walkforward"] = wf_data
+
+    data["waterfall"] = {
+        "ind": "malaria_incidence_per1000atrisk",
+        "stages": [
+            {"label": "Naive: raw scale, uniform (1,1,1)", "v": round(float(malaria_gap_naive_pct), 1), "color": ORANGE},
+            {"label": "This paper's protocol: log scale, uniform (1,1,1)", "v": round(float(malaria_gap_logscale_fixed_pct), 1), "color": BLUE},
+            {"label": "Final: log scale, AICc-selected order", "v": round(float(malaria_gap_final_pct), 1), "color": GREEN},
+        ],
+    }
+
+    dl = fc[["indicator", "n_obs", "confidence"]].copy()
+    dl["isStd"] = dl["confidence"].str.strip().str.lower() == "standard"
+    dl = dl.sort_values("n_obs")
+    data["datalength"] = [
+        {"ind": r["indicator"], "label": LABELS[r["indicator"]], "n": int(r["n_obs"]), "isStd": bool(r["isStd"])}
+        for _, r in dl.iterrows()
+    ]
+
+    data["labels"] = LABELS
+    data["colors"] = {"blue": BLUE, "green": GREEN, "pink": PINK, "orange": ORANGE}
+    return data
+
+CHART_DATA = build_chart_data()
+CHART_DATA_JSON = json.dumps(CHART_DATA, separators=(",", ":"))
+print(f"CHART_DATA_JSON size: {len(CHART_DATA_JSON)/1024:.1f} KB | TABLE_ROWS size: {len(TABLE_ROWS)/1024:.1f} KB | QR_SVG size: {len(QR_SVG)/1024:.1f} KB")
 
 # ============================================================
 # DASHBOARD -- CSS tokens/classes ported verbatim from the sibling projects' shipped
@@ -523,6 +416,10 @@ print(f"PCTCHANGE_SVG size: {len(PCTCHANGE_SVG)/1024:.1f} KB | BREAKHEAT_SVG siz
 # Spatial-only toolbar controls (region selector, LISA chips, map zoom, threshold slider) are
 # not applicable to this project's national time-series scope and are replaced with the
 # equivalent project-appropriate controls (filter, sort, export, reset, theme).
+#
+# Charts are rendered client-side (see the JS block near the end of <body>) from
+# CHART_DATA_JSON, not baked into this template as static SVG strings -- see the module
+# docstring's 2026-07-12 update #3 for why.
 # ============================================================
 DASHBOARD_HTML = f"""<!doctype html>
 <html lang="en">
@@ -564,7 +461,7 @@ header.top .meta{{font-size:.76rem;opacity:.92;margin-top:3px}}
 .kpi .s{{font-size:.66rem;color:var(--muted);margin-top:3px}}
 .grid{{display:grid;grid-template-columns:repeat(12,1fr);gap:13px}}
 .card{{background:var(--panel);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--line);padding:13px 15px 8px}}
-.card h3{{margin:0 0 1px;font-size:.84rem;font-weight:800}}
+.card h3{{margin:0 0 1px;font-size:.84rem;font-weight:800;display:flex;align-items:center;justify-content:space-between;gap:8px}}
 .card .cap{{font-size:.68rem;color:var(--muted);margin:0 0 8px}}
 .span6{{grid-column:span 6}}.span12{{grid-column:span 12}}
 table{{width:100%;border-collapse:collapse;font-size:.82rem}}
@@ -579,9 +476,26 @@ td:nth-child(2),td:nth-child(3),td:nth-child(5),td:nth-child(6),td:nth-child(7),
 .foot{{margin-top:20px;font-size:.7rem;color:var(--muted);line-height:1.5}}
 .foot a{{color:var(--primary)}}
 @media(max-width:1100px){{.kpis{{grid-template-columns:repeat(2,1fr)}}.span6{{grid-column:span 12}}}}
+.ichart{{width:100%;height:auto;display:block;overflow:visible}}
+.ichart [data-ind]{{cursor:pointer;transition:opacity .12s ease,filter .12s ease}}
+.ichart [data-ind].dim{{opacity:.25}}
+.ichart [data-ind].hl{{opacity:1;filter:brightness(1.12)}}
+.ichart .ln{{transition:opacity .12s ease,stroke-width .12s ease}}
+.ichart .ln.dim{{opacity:.22}}
+.ichart .ln.hl{{opacity:1;stroke-width:2.6}}
+tr[data-ind]{{cursor:pointer;transition:background .12s ease}}
+tr[data-ind].hl{{background:var(--ctl)}}
+#tooltip{{position:fixed;z-index:80;pointer-events:none;background:{INK};color:#fff;font-size:.72rem;line-height:1.45;padding:7px 10px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);max-width:260px;opacity:0;transform:translate(-50%,-100%);transition:opacity .08s ease}}
+#tooltip.show{{opacity:1}}
+#tooltip b{{color:#fff;display:block;margin-bottom:2px}}
+.sortbtns{{display:flex;gap:5px}}
+.sortbtn{{font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid var(--line);background:var(--ctl);color:var(--muted);cursor:pointer}}
+.sortbtn.on{{background:var(--primary);color:#fff;border-color:var(--primary)}}
+.sortbtn:focus-visible{{outline:2px solid var(--primary2);outline-offset:1px}}
 </style>
 </head>
 <body>
+<div id="tooltip"></div>
 <div class="wrap">
 <header class="top">
   <div><h1>A Reproducible Workflow and Source-Provenance Audit for Forecasting Short National Health-Indicator Panels: A Worked Example from Ghana Using WHO Global Health Observatory and World Bank Data</h1>
@@ -589,7 +503,7 @@ td:nth-child(2),td:nth-child(3),td:nth-child(5),td:nth-child(6),td:nth-child(7),
   <div class="brand">HI-EI Dashboard</div>
 </header>
 <div class="toolbar">
-  <div class="ctl"><label for="search">Filter indicator</label><input id="search" type="text" placeholder="Type to filter…" onkeyup="filterTable()"></div>
+  <div class="ctl"><label for="search">Filter / highlight indicator</label><input id="search" type="text" placeholder="Type to filter table &amp; highlight charts…" oninput="onSearch()"></div>
   <div class="spacer"></div>
   <div class="ctl"><label>&nbsp;</label><div style="display:flex;gap:7px">
     <button class="btn" onclick="resetView()">↺ Reset</button>
@@ -602,7 +516,7 @@ td:nth-child(2),td:nth-child(3),td:nth-child(5),td:nth-child(6),td:nth-child(7),
   <div class="s"><b>21</b><span>Forecastable (≥15y)</span></div>
   <div class="s"><b>9</b><span>Public-domain sources</span></div>
   <div class="s"><b>6</b><span>Data-integrity corrections</span></div>
-  <div class="sel">STROBE reporting · <b>MIT-licensed code</b></div>
+  <div class="sel">STROBE reporting · <b>MIT-licensed code</b> · hover any chart to explore, or type an indicator name above</div>
 </div>
 <div class="kpis">
   <div class="kpi"><div class="v">6</div><div class="l">Documented corrections</div><div class="s">source-provenance pitfalls fixed (Table 1)</div></div>
@@ -630,41 +544,42 @@ td:nth-child(2),td:nth-child(3),td:nth-child(5),td:nth-child(6),td:nth-child(7),
   </div>
   <div class="card span6">
     <h3>National indicator trends and 2030 forecasts</h3>
-    <p class="cap">Dashed segment: ARIMA point forecast to 2030. Full methodology in the manuscript (Figure 1).</p>
-    {TREND_SVG}
+    <p class="cap">Dashed segment: ARIMA point forecast to 2030. Hover a line or point for the exact value. Full methodology in the manuscript (Figure 1).</p>
+    <svg id="chart-trend" class="ichart" viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
   <div class="card span6">
     <h3>Method selection: classical beats LSTM on both tested series</h3>
-    <p class="cap">Walk-forward MAPE, seed-averaged across 5 LSTM initializations at 2 hidden-layer sizes (manuscript Table 3). <b>Y-axis is logarithmic</b> -- classical methods (ETS, ARIMA) are the two lowest bars in both groups by a wide margin, not a small one; read the printed values, not just bar height, when comparing across methods.</p>
-    {WALKFORWARD_SVG}
+    <p class="cap">Walk-forward MAPE, seed-averaged across 5 LSTM initializations at 2 hidden-layer sizes (manuscript Table 3). <b>Y-axis is logarithmic</b> -- classical methods (ETS, ARIMA) are the two lowest bars in both groups by a wide margin, not a small one. Hover a bar for the exact MAPE and (for LSTM) its seed-to-seed uncertainty.</p>
+    <svg id="chart-walkforward" class="ichart" viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
   <div class="card span6">
-    <h3>Order-selection sensitivity, all 21 series</h3>
-    <p class="cap">AICc difference between each series' own selected order and a uniform ARIMA(1,1,1) refit. Only {n_matched_111} of 21 series matched the uniform order exactly; {n_near_tie} of 21 were statistical near-ties (manuscript Table 4).</p>
-    {MARGIN_SVG}
+    <h3>Order-selection sensitivity, all 21 series <span class="sortbtns"><button class="sortbtn on" id="margin-sort-value" onclick="setSort('margin','value')">By value</button><button class="sortbtn" id="margin-sort-name" onclick="setSort('margin','name')">A–Z</button></span></h3>
+    <p class="cap">AICc difference between each series' own selected order and a uniform ARIMA(1,1,1) refit. Only {n_matched_111} of 21 series matched the uniform order exactly; {n_near_tie} of 21 were statistical near-ties (manuscript Table 4). Hover a bar or a row in the table below to see it highlighted everywhere it appears on this page.</p>
+    <svg id="chart-margin" class="ichart" viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
   <div class="card span6">
-    <h3>...and how much that difference moves the 2030 forecast</h3>
+    <h3>...and how much that difference moves the 2030 forecast <span class="sortbtns"><button class="sortbtn on" id="pctchange-sort-value" onclick="setSort('pctchange','value')">By value</button><button class="sortbtn" id="pctchange-sort-name" onclick="setSort('pctchange','name')">A–Z</button></span></h3>
     <p class="cap">Absolute % change in the 2030 point forecast, own AICc-selected order vs. a uniform ARIMA(1,1,1) (manuscript Figure 3). Colour here reflects this chart's own &ge;2% threshold, not the AICc near-tie/decisive split in the chart above -- the two are only loosely coupled: some AICc near-ties still move the forecast by double digits, and some AICc-decisive series barely move it at all.</p>
-    {PCTCHANGE_SVG}
+    <svg id="chart-pctchange" class="ichart" viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
   <div class="card span12">
     <h3>Structural-break sensitivity: 2020 COVID-19 vs. 2022 currency crisis, all 21 series</h3>
-    <p class="cap">AICc improvement from adding a level-shift dummy at each candidate break, vs. the no-intervention specification (manuscript Table 5). Orange = AICc favours a break; blue = it does not; grey "NT" = not testable (fewer than 2 post-break or 5 pre-break observations). Bold, asterisked cells (Δ&gt;2) are this paper's operational "decisive" threshold (Methods) -- a low bar, not a formal significance test. Testing rather than assuming away these breaks: a decisive currency-crisis break shifts the malaria 2030 forecast by a further {sb_malaria['currency_2022_pct_change_2030']:+.1f}% (larger than the order-selection effect above), and a decisive break at both candidate dates is found for the World Bank life-expectancy series -- a plausible partial explanation for its divergence from the WHO-GHO life-expectancy series, not a resolved causal account. Most series' break tests are underpowered on 2–5 post-break observations.</p>
-    {BREAKHEAT_SVG}
+    <p class="cap">AICc improvement from adding a level-shift dummy at each candidate break, vs. the no-intervention specification (manuscript Table 5). Orange = AICc favours a break; blue = it does not; grey "NT" = not testable (fewer than 2 post-break or 5 pre-break observations). Bold, asterisked cells (Δ&gt;2) are this paper's operational "decisive" threshold (Methods) -- a low bar, not a formal significance test. Hover any cell for the exact ΔAICc and post-break observation count. Testing rather than assuming away these breaks: a decisive currency-crisis break shifts the malaria 2030 forecast by a further {sb_malaria['currency_2022_pct_change_2030']:+.1f}% (larger than the order-selection effect above), and a decisive break at both candidate dates is found for the World Bank life-expectancy series -- a plausible partial explanation for its divergence from the WHO-GHO life-expectancy series, not a resolved causal account. Most series' break tests are underpowered on 2–5 post-break observations.</p>
+    <svg id="chart-breakheat" class="ichart" viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
   <div class="card span6">
     <h3>Why the malaria ARIMA-vs-ETS gap narrows: scale, not order</h3>
-    <p class="cap">Isolated on a like-for-like basis: fitting on the log scale (this paper's protocol for non-negative-bounded series) closes most of the gap on its own; adding the series' own AICc-selected order on top does not close it further.</p>
-    {MALARIA_WATERFALL_SVG}
+    <p class="cap">Isolated on a like-for-like basis: fitting on the log scale (this paper's protocol for non-negative-bounded series) closes most of the gap on its own; adding the series' own AICc-selected order on top does not close it further. Hover a bar for the exact gap at each stage.</p>
+    <svg id="chart-waterfall" class="ichart" viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
   <div class="card span6">
-    <h3>Data-length eligibility and confidence tiers, all 21 series</h3>
+    <h3>Data-length eligibility and confidence tiers, all 21 series <span class="sortbtns"><button class="sortbtn on" id="datalength-sort-value" onclick="setSort('datalength','value')">By length</button><button class="sortbtn" id="datalength-sort-name" onclick="setSort('datalength','name')">A–Z</button></span></h3>
     <p class="cap">Series length in years, sorted; dashed lines mark this paper's eligibility rule (Methods, Table 2): under 15 years excluded from formal forecasting, 15–24 years forecast but flagged low-confidence, 25+ treated as standard-confidence.</p>
-    {DATALENGTH_SVG}
+    <svg id="chart-datalength" class="ichart" viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
   <div class="card span12">
     <h3>Full forecast table</h3>
+    <p class="cap">Rows highlight in sync with the charts above -- hover a row here, or a bar/cell above, to see the same indicator lit up everywhere it appears.</p>
     <div class="table-wrap">
     <table id="fctable">
       <thead><tr>
@@ -689,6 +604,7 @@ td:nth-child(2),td:nth-child(3),td:nth-child(5),td:nth-child(6),td:nth-child(7),
   <a href="https://github.com/valentineghanem-bit/disease-burden-forecasting-ghana" target="_blank" rel="noopener">disease-burden-forecasting-ghana</a>.
 </div>
 </div>
+<script id="chart-data" type="application/json">{CHART_DATA_JSON}</script>
 <script>
 (function() {{
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {{
@@ -726,6 +642,8 @@ function resetView() {{
   document.getElementById('search').value = '';
   document.querySelector('#fctable tbody').innerHTML = ORIGINAL_ROWS;
   sortDir = {{}};
+  filterTable();
+  clearHighlight();
 }}
 function exportCSV() {{
   const headerCells = Array.from(document.querySelectorAll('#fctable thead tr:last-child th'));
@@ -743,6 +661,323 @@ function exportCSV() {{
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }}
+
+const DATA = JSON.parse(document.getElementById('chart-data').textContent);
+const NEAR_TIE_THRESH = 2;
+
+function fmt(v, d) {{ d = (d === undefined) ? 1 : d; return Number(v).toFixed(d); }}
+function esc(s) {{ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }}
+
+const tooltipEl = document.getElementById('tooltip');
+function showTooltip(evt, html) {{
+  tooltipEl.innerHTML = html;
+  tooltipEl.classList.add('show');
+  moveTooltip(evt);
+}}
+function moveTooltip(evt) {{
+  tooltipEl.style.left = evt.clientX + 'px';
+  tooltipEl.style.top = (evt.clientY - 12) + 'px';
+}}
+function hideTooltip() {{ tooltipEl.classList.remove('show'); }}
+function clearHighlight() {{
+  document.querySelectorAll('[data-ind]').forEach(function(el) {{ el.classList.remove('hl'); el.classList.remove('dim'); }});
+}}
+function setHighlight(ind) {{
+  document.querySelectorAll('[data-ind]').forEach(function(el) {{
+    if (el.getAttribute('data-ind') === ind) {{ el.classList.add('hl'); el.classList.remove('dim'); }}
+    else {{ el.classList.add('dim'); el.classList.remove('hl'); }}
+  }});
+}}
+document.addEventListener('mouseover', function(evt) {{
+  const el = evt.target.closest('[data-ind]');
+  if (!el) return;
+  setHighlight(el.getAttribute('data-ind'));
+  const tip = el.getAttribute('data-tip');
+  if (tip) showTooltip(evt, tip);
+}});
+document.addEventListener('mousemove', function(evt) {{
+  if (tooltipEl.classList.contains('show')) moveTooltip(evt);
+}});
+document.addEventListener('mouseout', function(evt) {{
+  const el = evt.target.closest('[data-ind]');
+  if (!el) return;
+  const to = evt.relatedTarget && evt.relatedTarget.closest ? evt.relatedTarget.closest('[data-ind]') : null;
+  if (to && to.getAttribute('data-ind') === el.getAttribute('data-ind')) return;
+  clearHighlight();
+  hideTooltip();
+}});
+function onSearch() {{
+  filterTable();
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  if (!q) {{ clearHighlight(); return; }}
+  const matches = Object.keys(DATA.labels).filter(function(ind) {{ return DATA.labels[ind].toLowerCase().includes(q); }});
+  document.querySelectorAll('[data-ind]').forEach(function(el) {{
+    const ind = el.getAttribute('data-ind');
+    if (matches.indexOf(ind) !== -1) {{ el.classList.add('hl'); el.classList.remove('dim'); }}
+    else {{ el.classList.add('dim'); el.classList.remove('hl'); }}
+  }});
+}}
+
+function renderTrend() {{
+  const W = 720, H = 230, panelW = 220, gap = 30;
+  let svg = '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+  DATA.trend.forEach(function(s, i) {{
+    const ox = 10 + i * (panelW + gap), oy = 20, pw = panelW, ph = 150;
+    const years = s.years, vals = s.values;
+    const allY = vals.concat([s.fc2030]);
+    const ymin = Math.min.apply(null, allY) * 0.92, ymax = Math.max.apply(null, allY) * 1.08;
+    const xmin = years[0], xmax = 2030;
+    const px = function(x) {{ return ox + (x - xmin) / (xmax - xmin) * pw; }};
+    const py = function(y) {{ return oy + ph - (y - ymin) / (ymax - ymin) * ph; }};
+    const pts = years.map(function(x, j) {{ return px(x).toFixed(1) + ',' + py(vals[j]).toFixed(1); }}).join(' ');
+    const lastYear = years[years.length - 1], lastVal = vals[vals.length - 1];
+    const tip = '<b>' + esc(s.label) + '</b>' + lastYear + ': ' + fmt(lastVal, 1) + ' (last observed)<br>2030 forecast: ' + fmt(s.fc2030, 1);
+    svg += '<g data-ind="' + s.ind + '" data-tip="' + esc(tip) + '">';
+    svg += '<text x="' + ox + '" y="' + (oy - 6) + '" font-size="11" font-weight="bold" fill="#222">' + esc(s.label) + '</text>';
+    svg += '<polyline points="' + pts + '" fill="none" stroke="' + s.color + '" stroke-width="1.6" class="ln"/>';
+    svg += '<line x1="' + px(lastYear).toFixed(1) + '" y1="' + py(lastVal).toFixed(1) + '" x2="' + px(2030).toFixed(1) + '" y2="' + py(s.fc2030).toFixed(1) + '" stroke="' + s.color + '" stroke-width="1.6" stroke-dasharray="4,3" class="ln"/>';
+    svg += '<circle cx="' + px(2030).toFixed(1) + '" cy="' + py(s.fc2030).toFixed(1) + '" r="4" fill="' + s.color + '"/>';
+    svg += '<text x="' + (px(2030) - 4).toFixed(1) + '" y="' + (py(s.fc2030) - 8).toFixed(1) + '" font-size="10" text-anchor="end" fill="' + s.color + '">' + fmt(s.fc2030, 1) + '</text>';
+    svg += '<line x1="' + ox + '" y1="' + (oy + ph) + '" x2="' + (ox + pw) + '" y2="' + (oy + ph) + '" stroke="#ccc" stroke-width="1"/>';
+    svg += '<text x="' + ox + '" y="' + (oy + ph + 14) + '" font-size="9" fill="#666">' + years[0] + '</text>';
+    svg += '<text x="' + (ox + pw) + '" y="' + (oy + ph + 14) + '" font-size="9" text-anchor="end" fill="#666">2030</text>';
+    svg += '</g>';
+  }});
+  document.getElementById('chart-trend').innerHTML = svg;
+}}
+
+function renderWalkforward() {{
+  const W = 720, H = 300, leftPad = 50, rightPad = 20, topPad = 16, botPad = 50;
+  const pw = W - leftPad - rightPad, ph = H - topPad - botPad;
+  const ymin = 0.1, ymax = 20.0;
+  const py = function(v) {{ v = Math.max(v, ymin); return topPad + ph * (1 - (Math.log10(v) - Math.log10(ymin)) / (Math.log10(ymax) - Math.log10(ymin))); }};
+  const groupW = pw / 2;
+  const barW = groupW / (4 + 1.5);
+  let svg = '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+  [0.1, 1, 10].forEach(function(gy) {{
+    const yy = py(gy);
+    svg += '<line x1="' + leftPad + '" y1="' + yy.toFixed(1) + '" x2="' + (W - rightPad) + '" y2="' + yy.toFixed(1) + '" stroke="#eee" stroke-width="1"/>';
+    svg += '<text x="' + (leftPad - 6) + '" y="' + (yy + 3).toFixed(1) + '" font-size="8" text-anchor="end" fill="#666">' + gy + '%</text>';
+  }});
+  DATA.walkforward.forEach(function(grp, gi) {{
+    const gx0 = leftPad + gi * groupW;
+    grp.methods.forEach(function(m, mi) {{
+      const x = gx0 + 0.6 * barW + mi * barW;
+      const y = py(m.v);
+      const tip = '<b>' + esc(grp.label) + ' \\u2014 ' + esc(m.label) + '</b>MAPE: ' + fmt(m.v, 2) + '%' + (m.sd !== null ? '<br>&plusmn;' + fmt(m.sd, 2) + '% (SD across 5 seeds)' : '');
+      svg += '<g data-ind="' + grp.ind + '" data-tip="' + esc(tip) + '">';
+      svg += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + (barW * 0.8).toFixed(1) + '" height="' + Math.max(py(ymin) - y, 1).toFixed(1) + '" fill="' + m.color + '"/>';
+      if (m.sd !== null) {{
+        const yHi = py(m.v + m.sd), yLo = py(Math.max(m.v - m.sd, ymin));
+        const cx = x + barW * 0.4;
+        svg += '<line x1="' + cx.toFixed(1) + '" y1="' + yHi.toFixed(1) + '" x2="' + cx.toFixed(1) + '" y2="' + yLo.toFixed(1) + '" stroke="#333" stroke-width="1.2"/>';
+        svg += '<line x1="' + (cx - 3).toFixed(1) + '" y1="' + yHi.toFixed(1) + '" x2="' + (cx + 3).toFixed(1) + '" y2="' + yHi.toFixed(1) + '" stroke="#333" stroke-width="1.2"/>';
+        svg += '<line x1="' + (cx - 3).toFixed(1) + '" y1="' + yLo.toFixed(1) + '" x2="' + (cx + 3).toFixed(1) + '" y2="' + yLo.toFixed(1) + '" stroke="#333" stroke-width="1.2"/>';
+      }}
+      svg += '<text x="' + (x + barW * 0.4).toFixed(1) + '" y="' + (y - 4).toFixed(1) + '" font-size="7.5" text-anchor="middle" fill="#222">' + fmt(m.v, 2) + '</text>';
+      svg += '</g>';
+    }});
+    svg += '<text x="' + (gx0 + groupW / 2).toFixed(1) + '" y="' + (H - 30) + '" font-size="9" font-weight="bold" text-anchor="middle" fill="#222">' + esc(grp.label) + ' (' + esc(grp.sub) + ')</text>';
+  }});
+  DATA.walkforward[0].methods.forEach(function(m, mi) {{
+    const lx = leftPad + mi * 165, ly = H - 14;
+    svg += '<rect x="' + lx + '" y="' + (ly - 8) + '" width="9" height="9" fill="' + m.color + '"/>';
+    svg += '<text x="' + (lx + 13) + '" y="' + ly + '" font-size="8.5" fill="#222">' + esc(m.label) + '</text>';
+  }});
+  svg += '<text x="' + leftPad + '" y="12" font-size="9" fill="#444">MAPE, %, log scale (bars: seed-averaged; error bars: SD across 5 LSTM seeds)</text>';
+  document.getElementById('chart-walkforward').innerHTML = svg;
+}}
+
+let marginSort = 'value';
+function renderMargin() {{
+  const rows = DATA.margin.slice().sort(function(a, b) {{
+    return marginSort === 'name' ? a.label.localeCompare(b.label) : a.delta - b.delta;
+  }});
+  const W = 720, H = 460, leftPad = 210, rightPad = 40, topPad = 10, botPad = 25;
+  const pw = W - leftPad - rightPad, ph = H - topPad - botPad;
+  const n = rows.length, barH = ph / n * 0.7, gapH = ph / n;
+  const maxv = Math.max.apply(null, rows.map(function(r) {{ return r.delta; }}));
+  const minv = Math.min(0, Math.min.apply(null, rows.map(function(r) {{ return r.delta; }})));
+  const px = function(v) {{ return leftPad + (v - minv) / (maxv - minv) * pw; }};
+  let svg = '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+  const threshX = px(NEAR_TIE_THRESH);
+  svg += '<line x1="' + threshX.toFixed(1) + '" y1="' + topPad + '" x2="' + threshX.toFixed(1) + '" y2="' + (topPad + ph) + '" stroke="#333" stroke-width="1" stroke-dasharray="3,2"/>';
+  svg += '<text x="' + (threshX + 3).toFixed(1) + '" y="' + (topPad + 10) + '" font-size="9" fill="#333">near-tie threshold (2)</text>';
+  rows.forEach(function(r, i) {{
+    const y = topPad + i * gapH + (gapH - barH) / 2;
+    const color = r.nearTie ? DATA.colors.blue : DATA.colors.orange;
+    const x0 = px(Math.min(0, r.delta)), w = Math.abs(px(r.delta) - px(0));
+    const tip = '<b>' + esc(r.label) + '</b>\\u0394AICc vs. uniform (1,1,1): ' + fmt(r.delta, 2) + '<br>' + (r.nearTie ? 'Near-tie (\\u2264 2)' : 'Decisive');
+    svg += '<g data-ind="' + r.ind + '" data-tip="' + esc(tip) + '">';
+    svg += '<rect x="' + x0.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + Math.max(w, 1).toFixed(1) + '" height="' + barH.toFixed(1) + '" fill="' + color + '"/>';
+    svg += '<text x="' + (leftPad - 6) + '" y="' + (y + barH / 2 + 3).toFixed(1) + '" font-size="9" text-anchor="end" fill="#222">' + esc(r.label) + '</text>';
+    svg += '</g>';
+  }});
+  svg += '<text x="' + leftPad + '" y="' + (H - 6) + '" font-size="10" fill="#444">AICc difference vs. uniform ARIMA(1,1,1)</text>';
+  const legendY = topPad + 8;
+  svg += '<rect x="' + (W - rightPad - 14) + '" y="' + legendY + '" width="10" height="10" fill="' + DATA.colors.blue + '"/>';
+  svg += '<text x="' + (W - rightPad - 18) + '" y="' + (legendY + 9) + '" font-size="8" text-anchor="end" fill="#222">Near-tie</text>';
+  svg += '<rect x="' + (W - rightPad - 14) + '" y="' + (legendY + 14) + '" width="10" height="10" fill="' + DATA.colors.orange + '"/>';
+  svg += '<text x="' + (W - rightPad - 18) + '" y="' + (legendY + 23) + '" font-size="8" text-anchor="end" fill="#222">Decisive</text>';
+  document.getElementById('chart-margin').innerHTML = svg;
+}}
+
+let pctchangeSort = 'value';
+function renderPctchange() {{
+  const rows = DATA.pctchange.slice().sort(function(a, b) {{
+    return pctchangeSort === 'name' ? a.label.localeCompare(b.label) : a.abschg - b.abschg;
+  }});
+  const W = 720, H = 460, leftPad = 210, rightPad = 40, topPad = 10, botPad = 25;
+  const pw = W - leftPad - rightPad, ph = H - topPad - botPad;
+  const n = rows.length, barH = ph / n * 0.7, gapH = ph / n;
+  const thresh = 2.0;
+  const maxv = Math.max.apply(null, rows.map(function(r) {{ return r.abschg; }})) * 1.05;
+  const px = function(v) {{ return leftPad + (v / maxv) * pw; }};
+  let svg = '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+  const threshX = px(thresh);
+  svg += '<line x1="' + threshX.toFixed(1) + '" y1="' + topPad + '" x2="' + threshX.toFixed(1) + '" y2="' + (topPad + ph) + '" stroke="#333" stroke-width="1" stroke-dasharray="3,2"/>';
+  svg += '<text x="' + (threshX + 3).toFixed(1) + '" y="' + (topPad + 10) + '" font-size="9" fill="#333">2% threshold</text>';
+  rows.forEach(function(r, i) {{
+    const y = topPad + i * gapH + (gapH - barH) / 2;
+    const color = r.abschg >= thresh ? DATA.colors.orange : DATA.colors.blue;
+    const w = px(r.abschg) - leftPad;
+    const tip = '<b>' + esc(r.label) + '</b>2030 forecast change: ' + fmt(r.pct, 1) + '%';
+    svg += '<g data-ind="' + r.ind + '" data-tip="' + esc(tip) + '">';
+    svg += '<rect x="' + leftPad + '" y="' + y.toFixed(1) + '" width="' + Math.max(w, 1).toFixed(1) + '" height="' + barH.toFixed(1) + '" fill="' + color + '"/>';
+    svg += '<text x="' + (leftPad - 6) + '" y="' + (y + barH / 2 + 3).toFixed(1) + '" font-size="9" text-anchor="end" fill="#222">' + esc(r.label) + '</text>';
+    svg += '<text x="' + (px(r.abschg) + 4).toFixed(1) + '" y="' + (y + barH / 2 + 3).toFixed(1) + '" font-size="8.5" fill="#444">' + fmt(r.pct, 1) + '%</text>';
+    svg += '</g>';
+  }});
+  const legendY = topPad + 8;
+  svg += '<rect x="' + (W - rightPad - 14) + '" y="' + legendY + '" width="10" height="10" fill="' + DATA.colors.orange + '"/>';
+  svg += '<text x="' + (W - rightPad - 18) + '" y="' + (legendY + 9) + '" font-size="8" text-anchor="end" fill="#222">&#8805;2% impact</text>';
+  svg += '<rect x="' + (W - rightPad - 14) + '" y="' + (legendY + 14) + '" width="10" height="10" fill="' + DATA.colors.blue + '"/>';
+  svg += '<text x="' + (W - rightPad - 18) + '" y="' + (legendY + 23) + '" font-size="8" text-anchor="end" fill="#222">&lt;2% impact</text>';
+  svg += '<text x="' + leftPad + '" y="' + (H - 6) + '" font-size="10" fill="#444">|% change| in 2030 point forecast, own AICc-selected order vs. uniform ARIMA(1,1,1)</text>';
+  document.getElementById('chart-pctchange').innerHTML = svg;
+}}
+
+function renderBreakheat() {{
+  const order = Object.keys(DATA.labels);
+  const W = 720, H = 460, leftPad = 210, rightPad = 20, topPad = 34, botPad = 10;
+  const cellW = (W - leftPad - rightPad) / 2, ph = H - topPad - botPad;
+  const rowH = ph / order.length, cap = 15.0;
+  const byInd = {{}};
+  DATA.breakheat.forEach(function(r) {{ byInd[r.ind] = r; }});
+  function cellColor(v) {{
+    if (v === null) return '#e2e5e9';
+    const t = Math.min(Math.abs(v), cap) / cap;
+    let r0, g0, b0, r1, g1, b1;
+    if (v >= 0) {{ r0 = 0xff; g0 = 0xe8; b0 = 0xd8; r1 = 0xd5; g1 = 0x5e; b1 = 0x00; }}
+    else {{ r0 = 0xe1; g0 = 0xf0; b0 = 0xfa; r1 = 0x00; g1 = 0x72; b1 = 0xb2; }}
+    const r = Math.round(r0 + (r1 - r0) * t), g = Math.round(g0 + (g1 - g0) * t), b = Math.round(b0 + (b1 - b0) * t);
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }}
+  let svg = '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+  svg += '<text x="' + leftPad + '" y="16" font-size="9.5" font-weight="bold" text-anchor="middle" fill="#222">COVID-2020 break</text>';
+  svg += '<text x="' + (leftPad + cellW) + '" y="16" font-size="9.5" font-weight="bold" text-anchor="middle" fill="#222">Currency-2022 break</text>';
+  order.forEach(function(ind, i) {{
+    const row = byInd[ind];
+    const y = topPad + i * rowH;
+    svg += '<text x="' + (leftPad - 6) + '" y="' + (y + rowH / 2 + 3).toFixed(1) + '" font-size="9" text-anchor="end" fill="#222">' + esc(DATA.labels[ind]) + '</text>';
+    [['covid', 0], ['currency', 1]].forEach(function(pair) {{
+      const key = pair[0], j = pair[1];
+      const cellData = row[key];
+      const x = leftPad + j * cellW;
+      const val = cellData.testable ? cellData.delta : null;
+      const label = key === 'covid' ? 'COVID-2020 break' : 'Currency-2022 break';
+      let tip;
+      if (val === null) {{ tip = '<b>' + esc(DATA.labels[ind]) + '</b>' + label + ': not testable (' + cellData.nPost + ' post-break obs.)'; }}
+      else {{ tip = '<b>' + esc(DATA.labels[ind]) + '</b>' + label + ': \\u0394AICc ' + (val >= 0 ? '+' : '') + fmt(val, 1) + (val > 2 ? ' (decisive)' : '') + '<br>' + cellData.nPost + ' post-break observations'; }}
+      svg += '<g data-ind="' + ind + '" data-tip="' + esc(tip) + '">';
+      svg += '<rect x="' + (x + 1).toFixed(1) + '" y="' + (y + 1).toFixed(1) + '" width="' + (cellW - 2).toFixed(1) + '" height="' + (rowH - 2).toFixed(1) + '" fill="' + cellColor(val) + '" stroke="#fff" stroke-width="1"/>';
+      if (val === null) {{
+        svg += '<text x="' + (x + cellW / 2).toFixed(1) + '" y="' + (y + rowH / 2 + 3).toFixed(1) + '" font-size="8" text-anchor="middle" fill="#999">NT</text>';
+      }} else {{
+        const decisive = val > 2;
+        const lbl = (val >= 0 ? '+' : '') + fmt(val, 1) + (decisive ? '*' : '');
+        svg += '<text x="' + (x + cellW / 2).toFixed(1) + '" y="' + (y + rowH / 2 + 3).toFixed(1) + '" font-size="8" text-anchor="middle" font-weight="' + (decisive ? 'bold' : 'normal') + '" fill="#1b2733" stroke="#ffffff" stroke-width="2.5" paint-order="stroke fill" stroke-linejoin="round">' + lbl + '</text>';
+      }}
+      svg += '</g>';
+    }});
+  }});
+  document.getElementById('chart-breakheat').innerHTML = svg;
+}}
+
+function renderWaterfall() {{
+  const stages = DATA.waterfall.stages, ind = DATA.waterfall.ind;
+  const W = 720, H = 200, leftPad = 40, rightPad = 20, topPad = 16, botPad = 46;
+  const pw = W - leftPad - rightPad, ph = H - topPad - botPad;
+  const maxv = Math.max.apply(null, stages.map(function(s) {{ return s.v; }})) * 1.15;
+  const bw = pw / stages.length * 0.5, gap = pw / stages.length;
+  const py = function(v) {{ return topPad + ph * (1 - v / maxv); }};
+  let svg = '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+  svg += '<line x1="' + leftPad + '" y1="' + (topPad + ph) + '" x2="' + (W - rightPad) + '" y2="' + (topPad + ph) + '" stroke="#ccc" stroke-width="1"/>';
+  stages.forEach(function(s, i) {{
+    const cx = leftPad + gap * i + gap / 2, x = cx - bw / 2, y = py(s.v);
+    const tip = '<b>' + esc(s.label) + '</b>ARIMA-vs-ETS gap: ' + fmt(s.v, 1) + '%';
+    svg += '<g data-ind="' + ind + '" data-tip="' + esc(tip) + '">';
+    svg += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (topPad + ph - y).toFixed(1) + '" fill="' + s.color + '"/>';
+    svg += '<text x="' + cx.toFixed(1) + '" y="' + (y - 8).toFixed(1) + '" font-size="13" font-weight="bold" text-anchor="middle" fill="#222">' + fmt(s.v, 1) + '%</text>';
+    s.label.split(': ').forEach(function(line, li) {{
+      svg += '<text x="' + cx.toFixed(1) + '" y="' + (topPad + ph + 16 + li * 11).toFixed(1) + '" font-size="8.5" text-anchor="middle" fill="#444">' + esc(line) + '</text>';
+    }});
+    svg += '</g>';
+  }});
+  svg += '<text x="' + leftPad + '" y="12" font-size="9" fill="#444">Malaria: ARIMA-vs-exponential-smoothing forecast gap by specification stage</text>';
+  document.getElementById('chart-waterfall').innerHTML = svg;
+}}
+
+let datalengthSort = 'value';
+function renderDatalength() {{
+  const rows = DATA.datalength.slice().sort(function(a, b) {{
+    return datalengthSort === 'name' ? a.label.localeCompare(b.label) : a.n - b.n;
+  }});
+  const W = 720, H = 300, leftPad = 210, rightPad = 40, topPad = 10, botPad = 22;
+  const pw = W - leftPad - rightPad, ph = H - topPad - botPad;
+  const n = rows.length, barH = ph / n * 0.7, gapH = ph / n;
+  const maxv = Math.max.apply(null, rows.map(function(r) {{ return r.n; }})) * 1.08;
+  const px = function(v) {{ return leftPad + (v / maxv) * pw; }};
+  let svg = '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+  [[15, '15y min'], [25, '25y standard']].forEach(function(pair) {{
+    const tx = px(pair[0]);
+    svg += '<line x1="' + tx.toFixed(1) + '" y1="' + topPad + '" x2="' + tx.toFixed(1) + '" y2="' + (topPad + ph) + '" stroke="#999" stroke-width="1" stroke-dasharray="3,2"/>';
+    svg += '<text x="' + (tx + 3).toFixed(1) + '" y="' + (topPad + 9) + '" font-size="7.5" fill="#666">' + pair[1] + '</text>';
+  }});
+  rows.forEach(function(r, i) {{
+    const y = topPad + i * gapH + (gapH - barH) / 2;
+    const color = r.isStd ? DATA.colors.green : DATA.colors.orange;
+    const w = px(r.n) - leftPad;
+    const tip = '<b>' + esc(r.label) + '</b>' + r.n + ' years of data<br>' + (r.isStd ? 'Standard confidence (\\u226525y)' : 'Low confidence (15\\u201324y)');
+    svg += '<g data-ind="' + r.ind + '" data-tip="' + esc(tip) + '">';
+    svg += '<rect x="' + leftPad + '" y="' + y.toFixed(1) + '" width="' + Math.max(w, 1).toFixed(1) + '" height="' + barH.toFixed(1) + '" fill="' + color + '"/>';
+    svg += '<text x="' + (leftPad - 6) + '" y="' + (y + barH / 2 + 3).toFixed(1) + '" font-size="8.5" text-anchor="end" fill="#222">' + esc(r.label) + '</text>';
+    svg += '<text x="' + (px(r.n) + 4).toFixed(1) + '" y="' + (y + barH / 2 + 3).toFixed(1) + '" font-size="8" fill="#444">' + r.n + 'y</text>';
+    svg += '</g>';
+  }});
+  const legendY = topPad + 8;
+  svg += '<rect x="' + (W - rightPad - 14) + '" y="' + legendY + '" width="10" height="10" fill="' + DATA.colors.green + '"/>';
+  svg += '<text x="' + (W - rightPad - 18) + '" y="' + (legendY + 9) + '" font-size="8" text-anchor="end" fill="#222">Standard</text>';
+  svg += '<rect x="' + (W - rightPad - 14) + '" y="' + (legendY + 14) + '" width="10" height="10" fill="' + DATA.colors.orange + '"/>';
+  svg += '<text x="' + (W - rightPad - 18) + '" y="' + (legendY + 23) + '" font-size="8" text-anchor="end" fill="#222">Low</text>';
+  document.getElementById('chart-datalength').innerHTML = svg;
+}}
+
+function setSort(chart, mode) {{
+  if (chart === 'margin') {{ marginSort = mode; renderMargin(); }}
+  else if (chart === 'pctchange') {{ pctchangeSort = mode; renderPctchange(); }}
+  else if (chart === 'datalength') {{ datalengthSort = mode; renderDatalength(); }}
+  document.getElementById(chart + '-sort-value').classList.toggle('on', mode === 'value');
+  document.getElementById(chart + '-sort-name').classList.toggle('on', mode === 'name');
+}}
+
+renderTrend();
+renderWalkforward();
+renderMargin();
+renderPctchange();
+renderBreakheat();
+renderWaterfall();
+renderDatalength();
 </script>
 </body>
 </html>
@@ -759,6 +994,10 @@ print(f"Dashboard written: {len(DASHBOARD_HTML)/1024:.1f} KB")
 # sibling 2-col print layout; Limitations gets its own full-width .limBox (not a numbered
 # block) and Conclusion is folded into the sibling's ".takeaway / What it means" callout,
 # mirroring the sibling information architecture rather than just its colours.
+#
+# The poster stays fully static (print-oriented, no JavaScript) and is untouched by the
+# 2026-07-12 interactive-dashboard rebuild -- it still uses TREND_SVG/MARGIN_SVG directly,
+# same as every prior pass. See module docstring, 2026-07-12 update #3.
 # ============================================================
 POSTER_ROW_ORDER = ["u5mr_who", "tb_incidence_per100k", "malaria_incidence_per1000atrisk",
     "hiv_new_infections_per1000", "life_expectancy_birth_yrs_who", "life_expectancy_birth_yrs_wb",

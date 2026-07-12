@@ -95,23 +95,45 @@ def _read_dashboard():
         return f.read()
 
 
+def _read_chart_data():
+    """The dashboard's 7 charts are rendered client-side (2026-07-12: 'drop static
+    figures, build interactive charts') from a JSON payload embedded in the HTML, not
+    baked into the markup as static SVG strings -- so regression locks on chart
+    correctness must parse that payload, the actual data contract the JS renderers
+    consume, rather than grep for pre-rendered SVG text that no longer exists in the
+    shipped file."""
+    import json
+    import re
+    content = _read_dashboard()
+    m = re.search(
+        r'<script id="chart-data" type="application/json">(.*?)</script>',
+        content, re.S,
+    )
+    assert m, "chart-data JSON payload not found in dashboard HTML -- was it removed or renamed?"
+    return json.loads(m.group(1))
+
+
 def test_dashboard_contains_all_seven_charts():
     """Regression lock for the 2026-07-12 storytelling rebuild (COUNCIL finding: no test
     previously exercised the 5 new chart-generation functions at all -- a silently broken
-    or accidentally-omitted chart would have passed CI undetected). One <svg viewBox=...>
-    per chart function; a future edit that drops one from the HTML template must fail here."""
+    or accidentally-omitted chart would have passed CI undetected). One <svg id="chart-...">
+    container per chart, populated by JS at runtime; a future edit that drops a container
+    or its render*() call must fail here."""
     content = _read_dashboard()
-    assert content.count("<svg viewBox=") == 7, (
-        "expected 7 chart SVGs (trend, margin, pctchange, breakheat, walkforward, "
-        "malaria_waterfall, datalength) -- count changed, a chart was added, dropped, "
-        "or duplicated without updating this lock"
-    )
+    expected_ids = ["chart-trend", "chart-walkforward", "chart-margin", "chart-pctchange",
+                     "chart-breakheat", "chart-waterfall", "chart-datalength"]
+    for cid in expected_ids:
+        assert f'id="{cid}"' in content, f"chart container #{cid} missing from dashboard HTML"
+    for fn in ["renderTrend", "renderWalkforward", "renderMargin", "renderPctchange",
+               "renderBreakheat", "renderWaterfall", "renderDatalength"]:
+        assert f"{fn}();" in content, f"{fn}() is not called at page load -- chart would render empty"
 
 
 def test_dashboard_structural_break_heatmap_matches_source_data():
-    """The structural-break heatmap must show exactly as many 'NT' and decisive-asterisk
-    cells as structural_break_sensitivity.csv actually contains -- catches a heatmap
-    silently reading the wrong column, the wrong threshold, or stale/cached data."""
+    """The structural-break heatmap's embedded data must show exactly as many
+    not-testable and decisive cells as structural_break_sensitivity.csv actually
+    contains -- catches the chart-data builder silently reading the wrong column,
+    the wrong threshold, or stale/cached data."""
     rows = _read_csv("structural_break_sensitivity.csv")
     n_nt = sum(1 for r in rows if r["covid_2020_testable"].strip().lower() != "true") + \
         sum(1 for r in rows if r["currency_2022_testable"].strip().lower() != "true")
@@ -119,28 +141,42 @@ def test_dashboard_structural_break_heatmap_matches_source_data():
                       and float(r["covid_2020_delta_aicc"]) > 2) + \
         sum(1 for r in rows if r["currency_2022_testable"].strip().lower() == "true"
             and float(r["currency_2022_delta_aicc"]) > 2)
-    content = _read_dashboard()
-    assert content.count(">NT<") == n_nt, f"expected {n_nt} NT cells in the heatmap"
-    # Decisive cells render as "+val*" or "-val*"; count the trailing-asterisk labels only
-    # inside text nodes (avoids matching the CSS/legend elsewhere in the file).
-    import re
-    decisive_labels = re.findall(r'>[+-][0-9.]+\*<', content)
-    assert len(decisive_labels) == n_decisive, f"expected {n_decisive} decisive (*) cells in the heatmap"
+    breakheat = _read_chart_data()["breakheat"]
+    assert len(breakheat) == 21
+    got_nt = sum(1 for r in breakheat for key in ("covid", "currency") if not r[key]["testable"])
+    got_decisive = sum(
+        1 for r in breakheat for key in ("covid", "currency")
+        if r[key]["testable"] and r[key]["delta"] > 2
+    )
+    assert got_nt == n_nt, f"expected {n_nt} not-testable cells in the heatmap data, got {got_nt}"
+    assert got_decisive == n_decisive, f"expected {n_decisive} decisive cells in the heatmap data, got {got_decisive}"
 
 
 def test_dashboard_malaria_waterfall_matches_manuscript():
-    """The malaria specification waterfall must show the exact three percentages the
-    2026-07-11 council-fixed manuscript narrative reports (naive raw-scale, log-scale
-    fixed-order, log-scale own-order) -- catches drift between the dashboard's live
-    recomputation and the manuscript's own verified numbers."""
-    content = _read_dashboard()
-    for expected in ("24.4%", "3.5%", "9.1%"):
-        assert expected in content, f"malaria waterfall missing expected stage value {expected}"
+    """The malaria specification waterfall's embedded data must show the exact three
+    percentages the 2026-07-11 council-fixed manuscript narrative reports (naive
+    raw-scale, log-scale fixed-order, log-scale own-order) -- catches drift between the
+    dashboard's live recomputation and the manuscript's own verified numbers."""
+    stages = _read_chart_data()["waterfall"]["stages"]
+    values = [s["v"] for s in stages]
+    assert values == [24.4, 3.5, 9.1], f"malaria waterfall stage values drifted: {values}"
 
 
 def test_dashboard_walkforward_matches_table3():
-    """The walk-forward method-comparison chart must show manuscript Table 3's exact
-    MAPE values for both validated series (seed-averaged, 2 decimal places)."""
-    content = _read_dashboard()
-    for expected in ("0.22", "0.18", "14.08", "3.10", "0.23", "0.29", "3.68", "2.31"):
-        assert f">{expected}<" in content, f"walk-forward chart missing expected MAPE value {expected}"
+    """The walk-forward method-comparison chart's embedded data must show manuscript
+    Table 3's exact MAPE values for both validated series (seed-averaged, 2 decimals)."""
+    wf_data = _read_chart_data()["walkforward"]
+    assert len(wf_data) == 2
+    by_ind = {g["ind"]: g for g in wf_data}
+    u5mr_mape = [m["v"] for m in by_ind["u5mr_who"]["methods"]]
+    tb_mape = [m["v"] for m in by_ind["tb_incidence_per100k"]["methods"]]
+    assert u5mr_mape == [0.22, 0.18, 14.08, 3.10], f"U5MR MAPE values drifted: {u5mr_mape}"
+    assert tb_mape == [0.23, 0.29, 3.68, 2.31], f"TB MAPE values drifted: {tb_mape}"
+
+
+def test_dashboard_chart_data_covers_all_21_indicators():
+    """Every per-indicator chart (margin, pctchange, datalength) must carry all 21
+    series -- a filtered/truncated data-prep bug would silently ship a partial chart."""
+    data = _read_chart_data()
+    for key in ("margin", "pctchange", "datalength"):
+        assert len(data[key]) == 21, f"{key} chart data has {len(data[key])} rows, expected 21"
