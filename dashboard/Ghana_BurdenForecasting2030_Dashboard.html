@@ -141,7 +141,7 @@ tr[data-ind].hl{background:var(--ctl)}
   </div>
   <div class="card span12">
     <h3>Structural-break sensitivity: 2020 COVID-19 vs. 2022 currency crisis, all 21 series</h3>
-    <p class="cap">AICc improvement from adding a level-shift dummy at each candidate break, vs. the no-intervention specification (manuscript Table 5). Orange = AICc favours a break; blue = it does not; grey "NT" = not testable (fewer than 2 post-break or 5 pre-break observations). Bold, asterisked cells (Δ&gt;2) are this paper's operational "decisive" threshold (Methods) -- a low bar, not a formal significance test. Hover any cell for the exact ΔAICc and post-break observation count. Testing rather than assuming away these breaks: a decisive currency-crisis break shifts the malaria 2030 forecast by a further +26.5% (larger than the order-selection effect above), and a decisive break at both candidate dates is found for the World Bank life-expectancy series -- a plausible partial explanation for its divergence from the WHO-GHO life-expectancy series, not a resolved causal account. Most series' break tests are underpowered on 2–5 post-break observations.</p>
+    <p class="cap">AICc improvement from adding a level-shift dummy at each candidate break, vs. the no-intervention specification (manuscript Table 5). Orange = AICc favours a break; blue = it does not; grey "NT" = not testable (fewer than 2 post-break or 5 pre-break observations; the small number under "NT" shows how many post-break years the series actually has, out of the 2 required). Bold, asterisked cells (Δ&gt;2) are this paper's operational "decisive" threshold (Methods) -- a low bar, not a formal significance test. 7 of 21 series are even testable for the 2022 break -- most of the panel's WHO-GHO sources were last updated in 2021 or 2022, one or two years short of the 2 post-break years this test needs; this is a data-recency limit, not a modelling choice, and narrows as newer years are published. Hover any cell for the exact ΔAICc and post-break observation count. Testing rather than assuming away these breaks: a decisive currency-crisis break shifts the malaria 2030 forecast by a further +26.5% (larger than the order-selection effect above), and a decisive break at both candidate dates is found for the World Bank life-expectancy series -- a plausible partial explanation for its divergence from the WHO-GHO life-expectancy series, not a resolved causal account. Most series' break tests are underpowered on 2–5 post-break observations.</p>
     <svg id="chart-breakheat" class="ichart" viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
   <div class="card span6">
@@ -469,7 +469,8 @@ function renderBreakheat() {
       svg += '<g data-ind="' + ind + '" data-tip="' + esc(tip) + '">';
       svg += '<rect x="' + (x + 1).toFixed(1) + '" y="' + (y + 1).toFixed(1) + '" width="' + (cellW - 2).toFixed(1) + '" height="' + (rowH - 2).toFixed(1) + '" fill="' + cellColor(val) + '" stroke="#fff" stroke-width="1"/>';
       if (val === null) {
-        svg += '<text x="' + (x + cellW / 2).toFixed(1) + '" y="' + (y + rowH / 2 + 3).toFixed(1) + '" font-size="8" text-anchor="middle" fill="#999">NT</text>';
+        svg += '<text x="' + (x + cellW / 2).toFixed(1) + '" y="' + (y + rowH / 2 - 1).toFixed(1) + '" font-size="8" text-anchor="middle" fill="#999">NT</text>';
+        svg += '<text x="' + (x + cellW / 2).toFixed(1) + '" y="' + (y + rowH / 2 + 9).toFixed(1) + '" font-size="6.5" text-anchor="middle" fill="#aaa">(' + cellData.nPost + '/2y)</text>';
       } else {
         const decisive = val > 2;
         const lbl = (val >= 0 ? '+' : '') + fmt(val, 1) + (decisive ? '*' : '');
