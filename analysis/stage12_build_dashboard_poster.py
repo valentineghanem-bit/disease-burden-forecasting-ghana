@@ -251,6 +251,10 @@ n_break_testable_total = int(n_covid_testable + n_currency_testable)
 
 # Pre-correction (raw-scale, uniform ARIMA(1,1,1)) malaria baseline -- recomputed live, not
 # hardcoded, so this figure can never silently drift from the manuscript's own verified number.
+# Three-way breakdown (2026-07-11 council fix): the ARIMA-vs-ETS gap narrowing is driven mostly
+# by fitting SCALE (raw -> log), not by order selection -- isolating order selection alone
+# (holding log scale fixed) actually re-opens some of the gap. See manuscript Results/Discussion
+# for the full disentangled explanation; these three numbers must stay in lockstep with it.
 import warnings
 warnings.filterwarnings("ignore")
 from statsmodels.tsa.arima.model import ARIMA
@@ -260,8 +264,11 @@ _y = _mal["malaria_incidence_per1000atrisk"].values
 _steps = 2030 - int(_mal["year"].max())
 _arima_raw_111 = ARIMA(_y, order=(1, 1, 1)).fit().get_forecast(steps=_steps).predicted_mean[-1]
 _ets_raw = ExponentialSmoothing(_y, trend="add", damped_trend=True).fit().forecast(_steps)[-1]
-malaria_gap_before_pct = abs(_arima_raw_111 - _ets_raw) / _ets_raw * 100
-malaria_gap_after_pct = abs(malaria_row["arima_2030"] - malaria_row["ets_2030"]) / malaria_row["ets_2030"] * 100
+malaria_gap_naive_pct = abs(_arima_raw_111 - _ets_raw) / _ets_raw * 100
+_order_comp = pd.read_csv(ROOT + r"\outputs\data\forecast_order_comparison.csv")
+_malaria_fixed_111_logscale = _order_comp.loc[_order_comp["indicator"] == "malaria_incidence_per1000atrisk", "fixed_111_2030"].iloc[0]
+malaria_gap_logscale_fixed_pct = abs(_malaria_fixed_111_logscale - malaria_row["ets_2030"]) / malaria_row["ets_2030"] * 100
+malaria_gap_final_pct = abs(malaria_row["arima_2030"] - malaria_row["ets_2030"]) / malaria_row["ets_2030"] * 100
 
 # ============================================================
 # DASHBOARD -- CSS tokens/classes ported verbatim from the sibling projects' shipped
@@ -595,7 +602,7 @@ th{{background:var(--soft)}}
       </div>
       <div class="block"><h2><span class="n">5</span>Key results</h2>
         <p><b>Under-five mortality</b> is projected to decline to {u5mr_row['arima_2030']:.1f} per 1,000 live births by 2030 (95% CI {u5mr_row['arima_ci_low']:.1f}–{u5mr_row['arima_ci_high']:.1f}), narrowly missing the SDG 3.2 target of 25.</p>
-        <p><b>Malaria incidence</b>: an earlier uniform-order specification produced a {malaria_gap_before_pct:.0f}% ARIMA-vs-ETS disagreement ({_arima_raw_111:.1f} vs. {_ets_raw:.1f}, illustrative pre-correction figures, raw scale); refitting with the series' own AICc-selected order narrowed this to {malaria_gap_after_pct:.0f}% ({malaria_row['arima_2030']:.1f} vs. {malaria_row['ets_2030']:.1f}, final production forecast). A decisive 2022 currency-crisis structural break shifts this series' forecast by a further {sb_malaria['currency_2022_pct_change_2030']:+.1f}%, a larger effect than the order-selection correction (Table 5).</p>
+        <p><b>Malaria incidence</b>: a naive fixed-order ARIMA(1,1,1) fit on the raw scale disagreed sharply with an equivalent exponential-smoothing fit ({malaria_gap_naive_pct:.0f}% gap, {_arima_raw_111:.1f} vs. {_ets_raw:.1f}). Fitting on the log scale -- this paper's protocol for non-negative-bounded series -- closed most of that gap on its own ({malaria_gap_logscale_fixed_pct:.1f}% gap, still at the fixed order); the series' own AICc-selected order, added on top of the log-scale fit, left a smaller but non-trivial {malaria_gap_final_pct:.1f}% gap ({malaria_row['arima_2030']:.1f} vs. {malaria_row['ets_2030']:.1f}, final production forecast). Fitting scale did almost all of the work in closing that gap. A decisive 2022 currency-crisis structural break shifts this series' forecast by a further {sb_malaria['currency_2022_pct_change_2030']:+.1f}%, a larger effect than the order-selection correction (Table 5).</p>
         <p><b>Classical methods beat LSTM</b> on both series tested in walk-forward validation (MAPE 0.18–0.29% for ETS/ARIMA vs. 2.3–14.1% for LSTM); LSTM was excluded from the forecasting roster.</p>
         <p><b>Life expectancy</b>: WHO-GHO projects a decline to 64.8 years by 2030 while the independently-sourced World Bank series projects a small increase to 67.6 years; a decisive structural break is found for the World Bank series at both 2020 and 2022, so this divergence is plausibly break-driven in part, not a settled two-source disagreement.</p></div>
       <div class="block"><h2><span class="n">6</span>Selected forecasts (full 21-series data underlying manuscript Figure 3)</h2>
