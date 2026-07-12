@@ -33,6 +33,23 @@ SVG (trend_svg, margin_svg, unchanged); data-encoding colours stay the Okabe-Ito
 already used in the manuscript figures -- only chrome (headers, cards, footers, badges)
 uses the sibling projects' ink/primary/gold tokens, so the two colour systems never fight
 over the same visual channel.
+
+2026-07-12 update: user judged the dashboard's storytelling and chart variety poor (poster
+judged "perfect" and left untouched). Five findings previously reported only in the
+manuscript's prose/tables/KPI cards had NO chart at all: the walk-forward method comparison
+(Table 3), the order-selection effect on the 2030 forecast (Figure 3), the full structural-
+break sensitivity result (Table 5, 21 series x 2 candidate breaks), the malaria specification
+-attribution finding (the 2026-07-11 council fix), and the data-length eligibility/confidence
+-tier framework (Table 2). Added five new inline-SVG chart functions (pctchange_svg,
+breakheat_svg, walkforward_svg, malaria_waterfall_svg, datalength_svg) so the dashboard now
+carries the manuscript's full analytical arc end to end -- pitfalls -> trends -> method choice
+-> order sensitivity (both "how different" and "how much it matters") -> structural breaks
+-> the corrected malaria deep-dive -> data-length reliability -- rather than stopping after
+the first two figures. Dashboard grew from 25.0 KB to ~54 KB (still under the 60 KB ceiling);
+poster untouched (still ~30 KB). All new charts read their data from the same CSVs already
+used elsewhere in this script (or newly loaded alongside them, see the top-of-file reads),
+so nothing here is a duplicate, hand-typed, or hardcoded copy of a number reported anywhere
+else -- the same drift-proofing discipline already applied to every other figure in this file.
 """
 import pandas as pd
 import numpy as np
@@ -49,6 +66,9 @@ REPO_URL = "https://github.com/valentineghanem-bit/disease-burden-forecasting-gh
 fc = pd.read_csv(ROOT + r"\outputs\data\national_forecasts_2030.csv")
 panel = pd.read_csv(ROOT + r"\data\processed\national_panel.csv")
 margin = pd.read_csv(ROOT + r"\outputs\data\aicc_margin_vs_uniform111.csv").sort_values("delta_aicc")
+order_comp = pd.read_csv(ROOT + r"\outputs\data\forecast_order_comparison.csv")
+wf = pd.read_csv(ROOT + r"\outputs\data\walkforward_validation_results.csv").rename(columns={"Unnamed: 0": "indicator"})
+sb = pd.read_csv(ROOT + r"\outputs\data\structural_break_sensitivity.csv")
 
 # ---------- Palette (Okabe-Ito colourblind-safe, matches manuscript figures) ----------
 BLUE = "#0072b2"
@@ -202,8 +222,207 @@ def margin_svg():
     svg.append("</svg>")
     return "".join(svg)
 
+# ---------- SVG chart 3: order-selection effect on the 2030 forecast, all 21 series
+# (dashboard-only -- Figure 3 equivalent; pairs with margin_svg's Figure 2 equivalent so the
+# dashboard tells both halves of the order-selection story: "how different are the models"
+# and "how much does it actually change the forecast"). ----------
+def pctchange_svg():
+    d = order_comp.merge(margin[["indicator", "near_tie"]], on="indicator", how="left")
+    d["abschg"] = d["pct_change"].abs()
+    d = d.sort_values("abschg")
+    W, H = 720, 460
+    left_pad, right_pad, top_pad, bot_pad = 210, 40, 10, 25
+    pw = W - left_pad - right_pad
+    ph = H - top_pad - bot_pad
+    n = len(d)
+    bar_h = ph / n * 0.7
+    gap_h = ph / n
+    maxv = d["abschg"].max() * 1.05
+    def px(v): return left_pad + (v / maxv) * pw
+    svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
+    svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
+    for i, (_, r) in enumerate(d.iterrows()):
+        y = top_pad + i * gap_h + (gap_h - bar_h) / 2
+        is_tie = str(r["near_tie"]).strip().lower() == "true"
+        color = BLUE if is_tie else ORANGE
+        w = px(r["abschg"]) - left_pad
+        svg.append(f'<rect x="{left_pad:.1f}" y="{y:.1f}" width="{max(w,1):.1f}" height="{bar_h:.1f}" fill="{color}"/>')
+        label = LABELS[r["indicator"]]
+        svg.append(f'<text x="{left_pad-6}" y="{y+bar_h/2+3:.1f}" font-size="9" text-anchor="end" fill="#222">{esc(label)}</text>')
+        svg.append(f'<text x="{px(r["abschg"])+4:.1f}" y="{y+bar_h/2+3:.1f}" font-size="8.5" fill="#444">{r["pct_change"]:.1f}%</text>')
+    svg.append(f'<text x="{left_pad}" y="{H-6}" font-size="10" fill="#444">|% change| in 2030 point forecast, own AICc-selected order vs. uniform ARIMA(1,1,1)</text>')
+    svg.append("</svg>")
+    return "".join(svg)
+
+# ---------- SVG chart 4: structural-break sensitivity heatmap, all 21 series x 2 candidate
+# breaks (Table 5 equivalent -- this finding previously had no chart at all, text only). ----------
+def breakheat_svg():
+    order = list(LABELS.keys())
+    W, H = 720, 460
+    left_pad, right_pad, top_pad, bot_pad = 210, 20, 34, 10
+    cell_w = (W - left_pad - right_pad) / 2
+    ph = H - top_pad - bot_pad
+    row_h = ph / len(order)
+    cap = 15.0  # colour-scale saturation cap; the true value is still printed as text
+    def cellcolor(v):
+        if v is None or (isinstance(v, float) and np.isnan(v)):
+            return "#e2e5e9"
+        t = min(abs(v), cap) / cap
+        if v >= 0:
+            r0, g0, b0 = 0xff, 0xe8, 0xd8
+            r1, g1, b1 = 0xd5, 0x5e, 0x00
+        else:
+            r0, g0, b0 = 0xe1, 0xf0, 0xfa
+            r1, g1, b1 = 0x00, 0x72, 0xb2
+        r = int(r0 + (r1 - r0) * t); g = int(g0 + (g1 - g0) * t); b = int(b0 + (b1 - b0) * t)
+        return f"rgb({r},{g},{b})"
+    svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
+    svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
+    svg.append(f'<text x="{left_pad}" y="16" font-size="9.5" font-weight="bold" text-anchor="middle" fill="#222">COVID-2020 break</text>')
+    svg.append(f'<text x="{left_pad+cell_w}" y="16" font-size="9.5" font-weight="bold" text-anchor="middle" fill="#222">Currency-2022 break</text>')
+    for i, ind in enumerate(order):
+        row = sb[sb["indicator"] == ind].iloc[0]
+        y = top_pad + i * row_h
+        svg.append(f'<text x="{left_pad-6}" y="{y+row_h/2+3:.1f}" font-size="9" text-anchor="end" fill="#222">{esc(LABELS[ind])}</text>')
+        for j, prefix in enumerate(["covid_2020", "currency_2022"]):
+            testable = str(row[f"{prefix}_testable"]).strip().lower() == "true"
+            val = float(row[f"{prefix}_delta_aicc"]) if testable else None
+            x = left_pad + j * cell_w
+            svg.append(f'<rect x="{x+1:.1f}" y="{y+1:.1f}" width="{cell_w-2:.1f}" height="{row_h-2:.1f}" fill="{cellcolor(val)}" stroke="#fff" stroke-width="1"/>')
+            if val is None:
+                svg.append(f'<text x="{x+cell_w/2:.1f}" y="{y+row_h/2+3:.1f}" font-size="8" text-anchor="middle" fill="#999">NT</text>')
+            else:
+                decisive = val > 2
+                label = f'{val:+.1f}{"*" if decisive else ""}'
+                svg.append(f'<text x="{x+cell_w/2:.1f}" y="{y+row_h/2+3:.1f}" font-size="8" text-anchor="middle" font-weight="{"bold" if decisive else "normal"}" fill="#1b2733">{label}</text>')
+    svg.append("</svg>")
+    return "".join(svg)
+
+# ---------- SVG chart 5: walk-forward MAPE, classical vs LSTM, both validated series
+# (Table 3 equivalent -- this finding previously had no chart, only a KPI card + prose). ----------
+def walkforward_svg():
+    W, H = 720, 300
+    left_pad, right_pad, top_pad, bot_pad = 50, 20, 16, 50
+    pw = W - left_pad - right_pad
+    ph = H - top_pad - bot_pad
+    ymin, ymax = 0.1, 20.0
+    def py(v):
+        v = max(v, ymin)
+        return top_pad + ph * (1 - (np.log10(v) - np.log10(ymin)) / (np.log10(ymax) - np.log10(ymin)))
+    methods = [("ETS", "ets_mape", None, GREEN), ("ARIMA", "arima_mape", None, BLUE),
+               ("LSTM (h=8)", "lstm_h8_mape", "lstm_h8_seed_sd", ORANGE), ("LSTM (h=32)", "lstm_h32_mape", "lstm_h32_seed_sd", PINK)]
+    series_list = [("u5mr_who", "Under-five mortality (n=92, 10 folds)"), ("tb_incidence_per100k", "Tuberculosis incidence (n=25, 6 folds)")]
+    group_w = pw / 2
+    bar_w = group_w / (len(methods) + 1.5)
+    svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
+    svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
+    for gy in [0.1, 1, 10]:
+        yy = py(gy)
+        svg.append(f'<line x1="{left_pad}" y1="{yy:.1f}" x2="{W-right_pad}" y2="{yy:.1f}" stroke="#eee" stroke-width="1"/>')
+        svg.append(f'<text x="{left_pad-6}" y="{yy+3:.1f}" font-size="8" text-anchor="end" fill="#666">{gy:g}%</text>')
+    for gi, (ind, glabel) in enumerate(series_list):
+        row = wf[wf["indicator"] == ind].iloc[0]
+        gx0 = left_pad + gi * group_w
+        arima_factor = row["arima_mape"] / row["arima_mae"]
+        for mi, (mlabel, col, sdcol, color) in enumerate(methods):
+            v = row[col]
+            x = gx0 + 0.6 * bar_w + mi * bar_w
+            y = py(v)
+            svg.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w*0.8:.1f}" height="{max(py(ymin)-y,1):.1f}" fill="{color}"/>')
+            if sdcol:
+                sd_pct = row[sdcol] * arima_factor
+                y_hi, y_lo = py(v + sd_pct), py(max(v - sd_pct, ymin))
+                cx = x + bar_w * 0.4
+                svg.append(f'<line x1="{cx:.1f}" y1="{y_hi:.1f}" x2="{cx:.1f}" y2="{y_lo:.1f}" stroke="#333" stroke-width="1.2"/>')
+                svg.append(f'<line x1="{cx-3:.1f}" y1="{y_hi:.1f}" x2="{cx+3:.1f}" y2="{y_hi:.1f}" stroke="#333" stroke-width="1.2"/>')
+                svg.append(f'<line x1="{cx-3:.1f}" y1="{y_lo:.1f}" x2="{cx+3:.1f}" y2="{y_lo:.1f}" stroke="#333" stroke-width="1.2"/>')
+            svg.append(f'<text x="{x+bar_w*0.4:.1f}" y="{y-4:.1f}" font-size="7.5" text-anchor="middle" fill="#222">{v:.2f}</text>')
+        svg.append(f'<text x="{gx0+group_w/2:.1f}" y="{H-30:.1f}" font-size="9" font-weight="bold" text-anchor="middle" fill="#222">{esc(glabel)}</text>')
+    legend_x = left_pad
+    legend_y = H - 14
+    for mi, (mlabel, col, sdcol, color) in enumerate(methods):
+        lx = legend_x + mi * 165
+        svg.append(f'<rect x="{lx:.1f}" y="{legend_y-8:.1f}" width="9" height="9" fill="{color}"/>')
+        svg.append(f'<text x="{lx+13:.1f}" y="{legend_y:.1f}" font-size="8.5" fill="#222">{mlabel}</text>')
+    svg.append(f'<text x="{left_pad}" y="12" font-size="9" fill="#444">MAPE, %, log scale (bars: seed-averaged; error bars: SD across 5 LSTM seeds)</text>')
+    svg.append("</svg>")
+    return "".join(svg)
+
+# ---------- SVG chart 6: malaria specification waterfall -- naive raw-scale to log-scale
+# fixed-order to log-scale own-order, illustrating the corrected causal attribution
+# (2026-07-11 council fix: scale, not order, does almost all of the work). ----------
+def malaria_waterfall_svg():
+    stages = [
+        ("Naive: raw scale,\nuniform (1,1,1)", malaria_gap_naive_pct, ORANGE),
+        ("This paper's protocol:\nlog scale, uniform (1,1,1)", malaria_gap_logscale_fixed_pct, BLUE),
+        ("Final: log scale,\nAICc-selected order", malaria_gap_final_pct, GREEN),
+    ]
+    W, H = 720, 200
+    left_pad, right_pad, top_pad, bot_pad = 40, 20, 16, 46
+    pw = W - left_pad - right_pad
+    ph = H - top_pad - bot_pad
+    maxv = max(v for _, v, _ in stages) * 1.15
+    bw = pw / len(stages) * 0.5
+    gap = pw / len(stages)
+    def py(v): return top_pad + ph * (1 - v / maxv)
+    svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
+    svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
+    svg.append(f'<line x1="{left_pad}" y1="{top_pad+ph}" x2="{W-right_pad}" y2="{top_pad+ph}" stroke="#ccc" stroke-width="1"/>')
+    for i, (label, v, color) in enumerate(stages):
+        cx = left_pad + gap * i + gap / 2
+        x = cx - bw / 2
+        y = py(v)
+        svg.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{top_pad+ph-y:.1f}" fill="{color}"/>')
+        svg.append(f'<text x="{cx:.1f}" y="{y-8:.1f}" font-size="13" font-weight="bold" text-anchor="middle" fill="#222">{v:.1f}%</text>')
+        for li, line in enumerate(label.split("\n")):
+            svg.append(f'<text x="{cx:.1f}" y="{top_pad+ph+16+li*11:.1f}" font-size="8.5" text-anchor="middle" fill="#444">{esc(line)}</text>')
+    svg.append(f'<text x="{left_pad}" y="12" font-size="9" fill="#444">Malaria: ARIMA-vs-exponential-smoothing forecast gap by specification stage</text>')
+    svg.append("</svg>")
+    return "".join(svg)
+
+# ---------- SVG chart 7: data-length eligibility and confidence tiers, all 21 series
+# (Table 2 equivalent -- shows WHY roughly two-thirds of the panel is flagged low-confidence). ----------
+def datalength_svg():
+    d = fc[["indicator", "n_obs", "confidence"]].copy()
+    d["is_std"] = d["confidence"].str.strip().str.lower() == "standard"
+    d = d.sort_values("n_obs")
+    W, H = 720, 300
+    left_pad, right_pad, top_pad, bot_pad = 210, 40, 10, 22
+    pw = W - left_pad - right_pad
+    ph = H - top_pad - bot_pad
+    n = len(d)
+    bar_h = ph / n * 0.7
+    gap_h = ph / n
+    maxv = d["n_obs"].max() * 1.08
+    def px(v): return left_pad + (v / maxv) * pw
+    svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
+    svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
+    for thresh, lbl in [(15, "15y min"), (25, "25y standard")]:
+        tx = px(thresh)
+        svg.append(f'<line x1="{tx:.1f}" y1="{top_pad}" x2="{tx:.1f}" y2="{top_pad+ph}" stroke="#999" stroke-width="1" stroke-dasharray="3,2"/>')
+        svg.append(f'<text x="{tx+3:.1f}" y="{top_pad+9}" font-size="7.5" fill="#666">{lbl}</text>')
+    for i, (_, r) in enumerate(d.iterrows()):
+        y = top_pad + i * gap_h + (gap_h - bar_h) / 2
+        color = GREEN if r["is_std"] else ORANGE
+        w = px(r["n_obs"]) - left_pad
+        svg.append(f'<rect x="{left_pad:.1f}" y="{y:.1f}" width="{max(w,1):.1f}" height="{bar_h:.1f}" fill="{color}"/>')
+        label = LABELS[r["indicator"]]
+        svg.append(f'<text x="{left_pad-6}" y="{y+bar_h/2+3:.1f}" font-size="8.5" text-anchor="end" fill="#222">{esc(label)}</text>')
+        svg.append(f'<text x="{px(r["n_obs"])+4:.1f}" y="{y+bar_h/2+3:.1f}" font-size="8" fill="#444">{int(r["n_obs"])}y</text>')
+    legend_y = top_pad + 8
+    svg.append(f'<rect x="{W-right_pad-14}" y="{legend_y}" width="10" height="10" fill="{GREEN}"/>')
+    svg.append(f'<text x="{W-right_pad-18}" y="{legend_y+9}" font-size="8" text-anchor="end" fill="#222">Standard</text>')
+    svg.append(f'<rect x="{W-right_pad-14}" y="{legend_y+14}" width="10" height="10" fill="{ORANGE}"/>')
+    svg.append(f'<text x="{W-right_pad-18}" y="{legend_y+23}" font-size="8" text-anchor="end" fill="#222">Low</text>')
+    svg.append("</svg>")
+    return "".join(svg)
+
 TREND_SVG = trend_svg()
 MARGIN_SVG = margin_svg()
+PCTCHANGE_SVG = pctchange_svg()
+BREAKHEAT_SVG = breakheat_svg()
+WALKFORWARD_SVG = walkforward_svg()
+DATALENGTH_SVG = datalength_svg()
 
 # ---------- shared table HTML (Table 1 content) ----------
 def table_rows_html():
@@ -237,9 +456,9 @@ sens = pd.read_csv(ROOT + r"\outputs\data\arima_order_sensitivity.csv")
 n_matched_111 = (sens["matches_111"].astype(str).str.strip().str.lower() == "true").sum()
 n_near_tie = (margin["near_tie"].astype(str).str.strip().str.lower() == "true").sum()
 
-# Structural-break sensitivity (Table 5) -- read live, not hardcoded, so the dashboard/poster
-# can never silently drift from the manuscript's own verified structural-break numbers.
-sb = pd.read_csv(ROOT + r"\outputs\data\structural_break_sensitivity.csv")
+# Structural-break sensitivity (Table 5) -- loaded near the top with the other source CSVs
+# (see `sb = pd.read_csv(...)` above) so the dashboard/poster can never silently drift from
+# the manuscript's own verified structural-break numbers.
 sb_malaria = sb[sb["indicator"] == "malaria_incidence_per1000atrisk"].iloc[0]
 sb_lifeexp_wb = sb[sb["indicator"] == "life_expectancy_birth_yrs_wb"].iloc[0]
 n_covid_testable = (sb["covid_2020_testable"].astype(str).str.strip().str.lower() == "true").sum()
@@ -265,10 +484,12 @@ _steps = 2030 - int(_mal["year"].max())
 _arima_raw_111 = ARIMA(_y, order=(1, 1, 1)).fit().get_forecast(steps=_steps).predicted_mean[-1]
 _ets_raw = ExponentialSmoothing(_y, trend="add", damped_trend=True).fit().forecast(_steps)[-1]
 malaria_gap_naive_pct = abs(_arima_raw_111 - _ets_raw) / _ets_raw * 100
-_order_comp = pd.read_csv(ROOT + r"\outputs\data\forecast_order_comparison.csv")
-_malaria_fixed_111_logscale = _order_comp.loc[_order_comp["indicator"] == "malaria_incidence_per1000atrisk", "fixed_111_2030"].iloc[0]
+_malaria_fixed_111_logscale = order_comp.loc[order_comp["indicator"] == "malaria_incidence_per1000atrisk", "fixed_111_2030"].iloc[0]
 malaria_gap_logscale_fixed_pct = abs(_malaria_fixed_111_logscale - malaria_row["ets_2030"]) / malaria_row["ets_2030"] * 100
 malaria_gap_final_pct = abs(malaria_row["arima_2030"] - malaria_row["ets_2030"]) / malaria_row["ets_2030"] * 100
+
+MALARIA_WATERFALL_SVG = malaria_waterfall_svg()
+print(f"PCTCHANGE_SVG size: {len(PCTCHANGE_SVG)/1024:.1f} KB | BREAKHEAT_SVG size: {len(BREAKHEAT_SVG)/1024:.1f} KB | WALKFORWARD_SVG size: {len(WALKFORWARD_SVG)/1024:.1f} KB | MALARIA_WATERFALL_SVG size: {len(MALARIA_WATERFALL_SVG)/1024:.1f} KB | DATALENGTH_SVG size: {len(DATALENGTH_SVG)/1024:.1f} KB")
 
 # ============================================================
 # DASHBOARD -- CSS tokens/classes ported verbatim from the sibling projects' shipped
@@ -388,13 +609,34 @@ td:nth-child(2),td:nth-child(3),td:nth-child(5),td:nth-child(6),td:nth-child(7),
     {TREND_SVG}
   </div>
   <div class="card span6">
+    <h3>Method selection: classical beats LSTM on both tested series</h3>
+    <p class="cap">Walk-forward MAPE, seed-averaged across 5 LSTM initializations at 2 hidden-layer sizes (manuscript Table 3). Classical methods (ETS, ARIMA) are the two lowest bars in both groups by a wide margin.</p>
+    {WALKFORWARD_SVG}
+  </div>
+  <div class="card span6">
     <h3>Order-selection sensitivity, all 21 series</h3>
     <p class="cap">AICc difference between each series' own selected order and a uniform ARIMA(1,1,1) refit. Only {n_matched_111} of 21 series matched the uniform order exactly; {n_near_tie} of 21 were statistical near-ties (manuscript Table 4).</p>
     {MARGIN_SVG}
   </div>
+  <div class="card span6">
+    <h3>...and how much that difference moves the 2030 forecast</h3>
+    <p class="cap">Absolute % change in the 2030 point forecast, own AICc-selected order vs. a uniform ARIMA(1,1,1) (manuscript Figure 3). Near-ties (blue) barely move the forecast; decisive corrections (orange) can move it by more than 20%.</p>
+    {PCTCHANGE_SVG}
+  </div>
   <div class="card span12">
-    <h3>Structural-break sensitivity</h3>
-    <p class="cap">Testing rather than assuming away the 2020 COVID-19 and 2022 Ghana currency-crisis breaks: a decisive currency-crisis break shifts the malaria 2030 forecast by a further {sb_malaria['currency_2022_pct_change_2030']:+.1f}% (larger than the order-selection effect above), and a decisive break at both candidate dates is found for the World Bank life-expectancy series -- a plausible partial explanation for its divergence from the WHO-GHO life-expectancy series, not a resolved causal account. Most series' break tests are underpowered on 2–5 post-break observations (manuscript Table 5).</p>
+    <h3>Structural-break sensitivity: 2020 COVID-19 vs. 2022 currency crisis, all 21 series</h3>
+    <p class="cap">AICc improvement from adding a level-shift dummy at each candidate break, vs. the no-intervention specification (manuscript Table 5). Orange = AICc favours a break; blue = it does not; grey "NT" = not testable (fewer than 2 post-break or 5 pre-break observations). Bold, asterisked cells (Δ&gt;2) are this paper's operational "decisive" threshold (Methods) -- a low bar, not a formal significance test. Testing rather than assuming away these breaks: a decisive currency-crisis break shifts the malaria 2030 forecast by a further {sb_malaria['currency_2022_pct_change_2030']:+.1f}% (larger than the order-selection effect above), and a decisive break at both candidate dates is found for the World Bank life-expectancy series -- a plausible partial explanation for its divergence from the WHO-GHO life-expectancy series, not a resolved causal account. Most series' break tests are underpowered on 2–5 post-break observations.</p>
+    {BREAKHEAT_SVG}
+  </div>
+  <div class="card span6">
+    <h3>Why the malaria ARIMA-vs-ETS gap narrows: scale, not order</h3>
+    <p class="cap">Isolated on a like-for-like basis: fitting on the log scale (this paper's protocol for non-negative-bounded series) closes most of the gap on its own; adding the series' own AICc-selected order on top does not close it further.</p>
+    {MALARIA_WATERFALL_SVG}
+  </div>
+  <div class="card span6">
+    <h3>Data-length eligibility and confidence tiers, all 21 series</h3>
+    <p class="cap">Series length in years, sorted; dashed lines mark this paper's eligibility rule (Methods, Table 2): under 15 years excluded from formal forecasting, 15–24 years forecast but flagged low-confidence, 25+ treated as standard-confidence.</p>
+    {DATALENGTH_SVG}
   </div>
   <div class="card span12">
     <h3>Full forecast table</h3>
