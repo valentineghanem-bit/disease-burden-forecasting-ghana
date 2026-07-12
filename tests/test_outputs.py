@@ -87,3 +87,60 @@ def test_dashboard_and_poster_under_size_ceiling():
         assert "base64" not in content.lower(), f"{path} contains a base64-embedded asset"
         for banned in ("cdn.", "unpkg.", "jsdelivr", "chart.js", "plotly", "d3.js"):
             assert banned not in content.lower(), f"{path} references external dependency: {banned}"
+
+
+def _read_dashboard():
+    path = os.path.join(DASHBOARD_DIR, "Ghana_BurdenForecasting2030_Dashboard.html")
+    with open(path, encoding="utf-8") as f:
+        return f.read()
+
+
+def test_dashboard_contains_all_seven_charts():
+    """Regression lock for the 2026-07-12 storytelling rebuild (COUNCIL finding: no test
+    previously exercised the 5 new chart-generation functions at all -- a silently broken
+    or accidentally-omitted chart would have passed CI undetected). One <svg viewBox=...>
+    per chart function; a future edit that drops one from the HTML template must fail here."""
+    content = _read_dashboard()
+    assert content.count("<svg viewBox=") == 7, (
+        "expected 7 chart SVGs (trend, margin, pctchange, breakheat, walkforward, "
+        "malaria_waterfall, datalength) -- count changed, a chart was added, dropped, "
+        "or duplicated without updating this lock"
+    )
+
+
+def test_dashboard_structural_break_heatmap_matches_source_data():
+    """The structural-break heatmap must show exactly as many 'NT' and decisive-asterisk
+    cells as structural_break_sensitivity.csv actually contains -- catches a heatmap
+    silently reading the wrong column, the wrong threshold, or stale/cached data."""
+    rows = _read_csv("structural_break_sensitivity.csv")
+    n_nt = sum(1 for r in rows if r["covid_2020_testable"].strip().lower() != "true") + \
+        sum(1 for r in rows if r["currency_2022_testable"].strip().lower() != "true")
+    n_decisive = sum(1 for r in rows if r["covid_2020_testable"].strip().lower() == "true"
+                      and float(r["covid_2020_delta_aicc"]) > 2) + \
+        sum(1 for r in rows if r["currency_2022_testable"].strip().lower() == "true"
+            and float(r["currency_2022_delta_aicc"]) > 2)
+    content = _read_dashboard()
+    assert content.count(">NT<") == n_nt, f"expected {n_nt} NT cells in the heatmap"
+    # Decisive cells render as "+val*" or "-val*"; count the trailing-asterisk labels only
+    # inside text nodes (avoids matching the CSS/legend elsewhere in the file).
+    import re
+    decisive_labels = re.findall(r'>[+-][0-9.]+\*<', content)
+    assert len(decisive_labels) == n_decisive, f"expected {n_decisive} decisive (*) cells in the heatmap"
+
+
+def test_dashboard_malaria_waterfall_matches_manuscript():
+    """The malaria specification waterfall must show the exact three percentages the
+    2026-07-11 council-fixed manuscript narrative reports (naive raw-scale, log-scale
+    fixed-order, log-scale own-order) -- catches drift between the dashboard's live
+    recomputation and the manuscript's own verified numbers."""
+    content = _read_dashboard()
+    for expected in ("24.4%", "3.5%", "9.1%"):
+        assert expected in content, f"malaria waterfall missing expected stage value {expected}"
+
+
+def test_dashboard_walkforward_matches_table3():
+    """The walk-forward method-comparison chart must show manuscript Table 3's exact
+    MAPE values for both validated series (seed-averaged, 2 decimal places)."""
+    content = _read_dashboard()
+    for expected in ("0.22", "0.18", "14.08", "3.10", "0.23", "0.29", "3.68", "2.31"):
+        assert f">{expected}<" in content, f"walk-forward chart missing expected MAPE value {expected}"

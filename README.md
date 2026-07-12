@@ -1,4 +1,4 @@
-# A Reproducible Workflow and Source-Provenance Audit for Forecasting Short National Health-Indicator Panels: A Worked Example from Ghana
+# A Reproducible Workflow and Source-Provenance Audit for Forecasting Short National Health-Indicator Panels: A Worked Example from Ghana Using WHO Global Health Observatory and World Bank Data
 
 [![CI](https://github.com/valentineghanem-bit/disease-burden-forecasting-ghana/actions/workflows/ci.yml/badge.svg)](https://github.com/valentineghanem-bit/disease-burden-forecasting-ghana/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)

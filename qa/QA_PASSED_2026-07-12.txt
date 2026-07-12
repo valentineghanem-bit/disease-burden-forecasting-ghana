@@ -1,0 +1,93 @@
+QA_PASSED
+Project 23 -- A reproducible workflow and source-provenance audit for forecasting short
+national health-indicator panels: a worked example from Ghana using WHO Global Health
+Observatory and World Bank data
+Date: 2026-07-12 (fourth pass -- full council/QA across manuscript, poster, dashboard,
+AND repo; supersedes QA_PASSED_2026-07-11c / archived)
+
+Trigger: operator instruction "run QA ad epid council accross manuscript, poster, and
+dahsboard, and repo" -- first pass to name the repository itself as its own scrutinized
+artifact. Context: the dashboard was substantially rebuilt one turn prior (5 new
+inline-SVG charts, real inline statistical computation) and had not yet been through a
+council review, only direct self-verification.
+
+Self-QA sweep (before advisors convened) found 2 issues, both confirmed and fixed:
+  - Zero test coverage of the 5 new chart functions (only file-size checks touched the
+    dashboard at all).
+  - CI tests Python 3.12 while README/manuscript state 3.13 "was used to produce the
+    reported results" -- undisclosed mismatch.
+
+Full 5-advisor council (Synthesis Lead, Scite Skeptic, Time-Series/ML Methods Auditor,
+Ghana Health-Data Contextualist, Reproducibility Auditor), briefed on what changed since
+the prior full pass so review effort concentrated on the new dashboard code while still
+cross-checking all 4 artifacts.
+
+8 findings confirmed and fixed as executable artefacts:
+
+  1. BUG (accessibility) -- the heatmap's single most decisive cell (+36.4, WB life
+     expectancy) measured ~3.9:1 text contrast, below the project's 4.5:1 mandate.
+     Independently re-derived the WCAG math and found NEITHER black nor white text
+     passes 4.5:1 against this specific background colour -- a colour-branching fix
+     could not have worked. Fixed with a white stroke-halo behind the text
+     (paint-order="stroke fill"), which guarantees legibility against any background.
+  2. MODERATE-HIGH (false claim) -- the order-effect chart's caption asserted AICc
+     near-tie/decisive status predicts forecast-magnitude impact; independently
+     verified against the raw CSV that 6+ of 21 series directly contradict this.
+     Recoloured the chart by its own >=2% threshold (matching the manuscript's own
+     language) and rewrote the caption to state the true, more interesting finding:
+     the two are only loosely coupled -- which is exactly why the manuscript presents
+     them as two separate figures.
+  3. CRITICAL (test coverage) -- 3-way independent confirmation (self-QA + 2 advisors):
+     zero regression tests existed for the 5 new chart functions. Added 4 new tests,
+     each independently recomputing the expected value from source CSVs and asserting
+     it appears correctly in the shipped HTML -- not just "the file exists."
+  4. MAJOR -- the method-comparison chart's log-scale y-axis was disclosed only in 9px
+     in-SVG text, not the prose caption. Added an explicit warning to the caption.
+  5. LOW -- LSTM error-bar rescaling used ARIMA's own MAPE/MAE ratio for both LSTM
+     configs instead of each config's own ratio (tiny numeric effect, real
+     methodological imprecision). Fixed to derive each method's own factor.
+  6. MODERATE -- README's and the Dashboard's <h1> both truncated the manuscript's full
+     registered title. Fixed both; Poster was not flagged (already recovers the missing
+     clause as a subtitle) and was left untouched per the user's "poster is perfect"
+     verdict from the prior turn.
+  7. LOW-MODERATE -- main.tex's ORCID was a LaTeX comment, never rendered into the
+     compiled frontmatter (the docx build was unaffected -- it hardcodes the ORCID
+     independently). Fixed by folding it into \address{}, guaranteed to render without
+     depending on an ORCID-specific macro this never-compile-tested LaTeX may lack.
+  8. MODERATE -- CI Python-version mismatch (self-QA, both advisors independently
+     confirmed). Fixed: CI now installs 3.13, matching the claimed reproduction
+     environment.
+
+Findings surfaced but judged not to need a fix (reasoned, not silently dropped): a
+colour-scale-cap concern for the heatmap was checked against the real data and found to
+rest on a mistaken premise (only 1 cell exceeds the cap, not several, and it is already
+rescued by its uncapped text label); the heatmap's NT/asterisk legend was confirmed
+already self-sufficient on the dashboard (no manuscript-only knowledge required); no
+overclaim was found in the malaria waterfall chart's causal framing; no stale
+district/spatial content survived from the pre-restructure scope.
+
+Verification, not assumed:
+  - Regenerated dashboard/docx after every fix, not just at the end.
+  - Test suite: 11/11 passing (7 original + 4 new regression tests).
+  - Citation cross-check: still 25/25, zero orphans.
+  - Tenet-20 sync-check: 10/14 PASS, same pre-existing checker false positives (no new
+    drift).
+  - `grep`-confirmed zero external-JS/CDN strings in either HTML deliverable.
+  - Served the fixed dashboard locally and drove it in the Browser pane: confirmed the
+    heatmap's stroke-halo count (27, matching the 27 testable cells exactly), the
+    order-effect chart's legend/caption text, and the log-scale warning all render as
+    written -- not just as generated.
+
+5/5 deliverables verified present, current, and mutually consistent (manuscript docx,
+poster HTML, dashboard HTML, master CSV, GitHub repo).
+
+Watch item (not a defect, flagged for awareness): dashboard grew to 57.1 KB (up from
+53.6 KB, mostly the new accessibility stroke-halo attributes) -- still under the 60 KB
+ceiling but with materially less headroom (~2.9 KB) than before. Any future dashboard
+addition should re-check the size-ceiling test explicitly before assuming there's room.
+
+Known, disclosed, non-blocking gap (unchanged from prior badges): no Zenodo/OSF
+archival DOI yet -- requires the author's own account/action.
+
+Full council findings and synthesis: see AIPOCH_Learning_Log.md, Project 23 section
+"FULL COUNCIL/QA ACROSS MANUSCRIPT, POSTER, DASHBOARD, REPO" dated 2026-07-12.

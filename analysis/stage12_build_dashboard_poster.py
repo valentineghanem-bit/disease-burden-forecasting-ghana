@@ -227,7 +227,14 @@ def margin_svg():
 # dashboard tells both halves of the order-selection story: "how different are the models"
 # and "how much does it actually change the forecast"). ----------
 def pctchange_svg():
-    d = order_comp.merge(margin[["indicator", "near_tie"]], on="indicator", how="left")
+    # Colour by this chart's OWN magnitude (>=2%, matching results_body.tex's own
+    # "negligible (<2%) for most series but substantial for a minority" language), not by
+    # the AICc near_tie flag from the margin chart. Confirmed (2026-07-12 council review):
+    # AICc near-tie/decisive status and forecast-magnitude impact are only loosely coupled
+    # -- several near-tie series (e.g. HIV per 1,000, ~12%) move the forecast substantially,
+    # and several AICc-decisive series (e.g. WB life expectancy, ~0.02%) barely move it at
+    # all. Borrowing near_tie here would colour bars in a way the data actively contradicts.
+    d = order_comp.copy()
     d["abschg"] = d["pct_change"].abs()
     d = d.sort_values("abschg")
     W, H = 720, 460
@@ -237,19 +244,27 @@ def pctchange_svg():
     n = len(d)
     bar_h = ph / n * 0.7
     gap_h = ph / n
+    thresh = 2.0
     maxv = d["abschg"].max() * 1.05
     def px(v): return left_pad + (v / maxv) * pw
     svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
     svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
+    thresh_x = px(thresh)
+    svg.append(f'<line x1="{thresh_x:.1f}" y1="{top_pad}" x2="{thresh_x:.1f}" y2="{top_pad+ph}" stroke="#333" stroke-width="1" stroke-dasharray="3,2"/>')
+    svg.append(f'<text x="{thresh_x+3:.1f}" y="{top_pad+10}" font-size="9" fill="#333">2% threshold</text>')
     for i, (_, r) in enumerate(d.iterrows()):
         y = top_pad + i * gap_h + (gap_h - bar_h) / 2
-        is_tie = str(r["near_tie"]).strip().lower() == "true"
-        color = BLUE if is_tie else ORANGE
+        color = ORANGE if r["abschg"] >= thresh else BLUE
         w = px(r["abschg"]) - left_pad
         svg.append(f'<rect x="{left_pad:.1f}" y="{y:.1f}" width="{max(w,1):.1f}" height="{bar_h:.1f}" fill="{color}"/>')
         label = LABELS[r["indicator"]]
         svg.append(f'<text x="{left_pad-6}" y="{y+bar_h/2+3:.1f}" font-size="9" text-anchor="end" fill="#222">{esc(label)}</text>')
         svg.append(f'<text x="{px(r["abschg"])+4:.1f}" y="{y+bar_h/2+3:.1f}" font-size="8.5" fill="#444">{r["pct_change"]:.1f}%</text>')
+    legend_y = top_pad + 8
+    svg.append(f'<rect x="{W-right_pad-14}" y="{legend_y}" width="10" height="10" fill="{ORANGE}"/>')
+    svg.append(f'<text x="{W-right_pad-18}" y="{legend_y+9}" font-size="8" text-anchor="end" fill="#222">&#8805;2% impact</text>')
+    svg.append(f'<rect x="{W-right_pad-14}" y="{legend_y+14}" width="10" height="10" fill="{BLUE}"/>')
+    svg.append(f'<text x="{W-right_pad-18}" y="{legend_y+23}" font-size="8" text-anchor="end" fill="#222">&lt;2% impact</text>')
     svg.append(f'<text x="{left_pad}" y="{H-6}" font-size="10" fill="#444">|% change| in 2030 point forecast, own AICc-selected order vs. uniform ARIMA(1,1,1)</text>')
     svg.append("</svg>")
     return "".join(svg)
@@ -264,9 +279,9 @@ def breakheat_svg():
     ph = H - top_pad - bot_pad
     row_h = ph / len(order)
     cap = 15.0  # colour-scale saturation cap; the true value is still printed as text
-    def cellcolor(v):
+    def cellrgb(v):
         if v is None or (isinstance(v, float) and np.isnan(v)):
-            return "#e2e5e9"
+            return (0xe2, 0xe5, 0xe9)
         t = min(abs(v), cap) / cap
         if v >= 0:
             r0, g0, b0 = 0xff, 0xe8, 0xd8
@@ -274,7 +289,9 @@ def breakheat_svg():
         else:
             r0, g0, b0 = 0xe1, 0xf0, 0xfa
             r1, g1, b1 = 0x00, 0x72, 0xb2
-        r = int(r0 + (r1 - r0) * t); g = int(g0 + (g1 - g0) * t); b = int(b0 + (b1 - b0) * t)
+        return (int(r0 + (r1 - r0) * t), int(g0 + (g1 - g0) * t), int(b0 + (b1 - b0) * t))
+    def cellcolor(v):
+        r, g, b = cellrgb(v)
         return f"rgb({r},{g},{b})"
     svg = [f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">']
     svg.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
@@ -294,7 +311,12 @@ def breakheat_svg():
             else:
                 decisive = val > 2
                 label = f'{val:+.1f}{"*" if decisive else ""}'
-                svg.append(f'<text x="{x+cell_w/2:.1f}" y="{y+row_h/2+3:.1f}" font-size="8" text-anchor="middle" font-weight="{"bold" if decisive else "normal"}" fill="#1b2733">{label}</text>')
+                # White stroke halo behind the text (paint-order) guarantees legibility on
+                # every cell colour, including the fully-saturated end of the scale -- the
+                # +36.4 WB-life-expectancy cell measured ~3.9:1 for either black or white
+                # fill alone before this fix (neither passes 4.5:1 against a mid-tone
+                # saturated orange), so a fixed fill colour cannot solve this; a halo can.
+                svg.append(f'<text x="{x+cell_w/2:.1f}" y="{y+row_h/2+3:.1f}" font-size="8" text-anchor="middle" font-weight="{"bold" if decisive else "normal"}" fill="#1b2733" stroke="#ffffff" stroke-width="2.5" paint-order="stroke fill" stroke-linejoin="round">{label}</text>')
     svg.append("</svg>")
     return "".join(svg)
 
@@ -323,14 +345,17 @@ def walkforward_svg():
     for gi, (ind, glabel) in enumerate(series_list):
         row = wf[wf["indicator"] == ind].iloc[0]
         gx0 = left_pad + gi * group_w
-        arima_factor = row["arima_mape"] / row["arima_mae"]
         for mi, (mlabel, col, sdcol, color) in enumerate(methods):
             v = row[col]
             x = gx0 + 0.6 * bar_w + mi * bar_w
             y = py(v)
             svg.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w*0.8:.1f}" height="{max(py(ymin)-y,1):.1f}" fill="{color}"/>')
             if sdcol:
-                sd_pct = row[sdcol] * arima_factor
+                # Each method's OWN mape/mae ratio, not a borrowed one (2026-07-12 council
+                # fix): this series' ARIMA and LSTM ratios differ by ~4% for tuberculosis,
+                # small at this chart's scale but methodologically the wrong divisor.
+                own_factor = row[col] / row[col.replace("_mape", "_mae")]
+                sd_pct = row[sdcol] * own_factor
                 y_hi, y_lo = py(v + sd_pct), py(max(v - sd_pct, ymin))
                 cx = x + bar_w * 0.4
                 svg.append(f'<line x1="{cx:.1f}" y1="{y_hi:.1f}" x2="{cx:.1f}" y2="{y_lo:.1f}" stroke="#333" stroke-width="1.2"/>')
@@ -559,7 +584,7 @@ td:nth-child(2),td:nth-child(3),td:nth-child(5),td:nth-child(6),td:nth-child(7),
 <body>
 <div class="wrap">
 <header class="top">
-  <div><h1>A Reproducible Workflow and Source-Provenance Audit for Forecasting Short National Health-Indicator Panels: A Worked Example from Ghana</h1>
+  <div><h1>A Reproducible Workflow and Source-Provenance Audit for Forecasting Short National Health-Indicator Panels: A Worked Example from Ghana Using WHO Global Health Observatory and World Bank Data</h1>
   <div class="meta">25 indicators assembled, 21 forecastable · 6 documented data-integrity corrections · last rebuilt {BUILD_DATE}</div></div>
   <div class="brand">HI-EI Dashboard</div>
 </header>
@@ -610,7 +635,7 @@ td:nth-child(2),td:nth-child(3),td:nth-child(5),td:nth-child(6),td:nth-child(7),
   </div>
   <div class="card span6">
     <h3>Method selection: classical beats LSTM on both tested series</h3>
-    <p class="cap">Walk-forward MAPE, seed-averaged across 5 LSTM initializations at 2 hidden-layer sizes (manuscript Table 3). Classical methods (ETS, ARIMA) are the two lowest bars in both groups by a wide margin.</p>
+    <p class="cap">Walk-forward MAPE, seed-averaged across 5 LSTM initializations at 2 hidden-layer sizes (manuscript Table 3). <b>Y-axis is logarithmic</b> -- classical methods (ETS, ARIMA) are the two lowest bars in both groups by a wide margin, not a small one; read the printed values, not just bar height, when comparing across methods.</p>
     {WALKFORWARD_SVG}
   </div>
   <div class="card span6">
@@ -620,7 +645,7 @@ td:nth-child(2),td:nth-child(3),td:nth-child(5),td:nth-child(6),td:nth-child(7),
   </div>
   <div class="card span6">
     <h3>...and how much that difference moves the 2030 forecast</h3>
-    <p class="cap">Absolute % change in the 2030 point forecast, own AICc-selected order vs. a uniform ARIMA(1,1,1) (manuscript Figure 3). Near-ties (blue) barely move the forecast; decisive corrections (orange) can move it by more than 20%.</p>
+    <p class="cap">Absolute % change in the 2030 point forecast, own AICc-selected order vs. a uniform ARIMA(1,1,1) (manuscript Figure 3). Colour here reflects this chart's own &ge;2% threshold, not the AICc near-tie/decisive split in the chart above -- the two are only loosely coupled: some AICc near-ties still move the forecast by double digits, and some AICc-decisive series barely move it at all.</p>
     {PCTCHANGE_SVG}
   </div>
   <div class="card span12">
